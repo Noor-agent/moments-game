@@ -9,6 +9,9 @@ using System.Collections.Generic;
 /// </summary>
 public class TankBattleGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.TankBattle;
+    protected override string LayoutId => "tank-battle";
+
     [Header("Tank Battle Config")]
     [SerializeField] private float tankSpeed = 7f;
     [SerializeField] private float turnSpeed = 180f;  // degrees/sec

@@ -71,7 +71,7 @@ public class SessionStateManager : MonoBehaviour
     public event Action<string>       OnPlayerDisconnectedById;
 
     // Legacy event signature compatibility
-    public event Action<PlayerData>   OnPlayerDisconnected;
+    public event Action<PlayerData>   OnPlayerLeft;
 
     // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -141,14 +141,14 @@ public class SessionStateManager : MonoBehaviour
             ChangePhase(SessionPhase.Countdown);
     }
 
-    public void OnPlayerDisconnected(string playerId)
+    public void HandlePlayerDisconnected(string playerId)
     {
         var p = GetPlayer(playerId);
         if (p == null) return;
         p.isConnected = false;
         p.isReady = false;
         OnPlayerDisconnectedById?.Invoke(playerId);
-        OnPlayerDisconnected?.Invoke(p);
+        OnPlayerLeft?.Invoke(p);
         Debug.Log($"[Session] Player disconnected: {p.nickname}");
     }
 

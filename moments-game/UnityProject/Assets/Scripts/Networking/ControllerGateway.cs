@@ -82,7 +82,7 @@ public class ControllerGateway : MonoBehaviour
             Debug.Log($"[Gateway] Player {playerId} disconnected (client {clientId})");
             _playerToClient.Remove(playerId);
             _clientToPlayer.Remove(clientId);
-            sessionManager?.OnPlayerDisconnected(playerId);
+            sessionManager?.HandlePlayerDisconnected(playerId);
 
             // Broadcast to remaining clients
             var msg = new PlayerEventMsg { type = "player_disconnected", playerId = playerId };
@@ -108,6 +108,15 @@ public class ControllerGateway : MonoBehaviour
                     break;
                 case "input":
                     HandleInput(clientId, json);
+                    break;
+                case "heroLock":
+                    HandleHeroLock(clientId, json);
+                    break;
+                case "heroHover":
+                    // Informational only — no server state change needed
+                    break;
+                case "ready":
+                    HandleReady(clientId, json);
                     break;
                 case "ping":
                     wsServer.Send(clientId, "{\"type\":\"pong\"}");
@@ -217,6 +226,29 @@ public class ControllerGateway : MonoBehaviour
         SendStateSnapshot(clientId);
     }
 
+    private void HandleHeroLock(string clientId, string json)
+    {
+        if (!_clientToPlayer.TryGetValue(clientId, out var playerId)) return;
+        var msg = JsonUtility.FromJson<HeroLockMsg>(json);
+        if (msg == null || string.IsNullOrEmpty(msg.heroId)) return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            sessionManager?.SetPlayerHero(playerId, msg.heroId);
+            Debug.Log($"[Gateway] Player {playerId} locked hero: {msg.heroId}");
+        });
+    }
+
+    private void HandleReady(string clientId, string json)
+    {
+        if (!_clientToPlayer.TryGetValue(clientId, out var playerId)) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            sessionManager?.SetPlayerReady(playerId, true);
+            Debug.Log($"[Gateway] Player {playerId} ready");
+        });
+    }
+
     private void HandleInput(string clientId, string json)
     {
         if (!_clientToPlayer.TryGetValue(clientId, out var playerId)) return;
@@ -300,6 +332,9 @@ public class ControllerGateway : MonoBehaviour
         wsServer?.Send(clientId, json);
     }
 
+    /// <summary>Broadcast a countdown tick to all phones (shows number on screen).</summary>
+    public void BroadcastCountdown(int count) => BroadcastUICommand("countdown", count.ToString());
+
     /// <summary>Broadcast a UI command to all connected phones.</summary>
     public void BroadcastUICommand(string command, string payload)
     {
@@ -326,6 +361,7 @@ public class ControllerGateway : MonoBehaviour
     [Serializable] private class TypePeek          { public string type; }
     [Serializable] private class JoinMsg           { public string type; public string nickname; public string heroId; public int slot; }
     [Serializable] private class ReconnectMsg      { public string type; public string token; }
+    [Serializable] private class HeroLockMsg       { public string type; public string heroId; }
     [Serializable] private class ServerHelloMsg    { public string type; public string version; public string roomToken; }
     [Serializable] private class JoinResponseMsg   { public string type; public string playerId; public int slot; public string reconnectToken; public string playerColor; public string reason; }
     [Serializable] private class PlayerEventMsg    { public string type; public string playerId; public string nickname; public string heroId; public int slot; }

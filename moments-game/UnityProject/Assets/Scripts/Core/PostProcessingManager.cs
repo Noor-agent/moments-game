@@ -51,6 +51,17 @@ public class PostProcessingManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         if (globalVolume == null) globalVolume = GetComponent<Volume>();
+
+        // When created bare by BootstrapController, auto-create a Volume component
+        // and a fresh VolumeProfile so SetupVolume() never NPEs.
+        if (globalVolume == null)
+        {
+            globalVolume = gameObject.AddComponent<Volume>();
+            globalVolume.isGlobal = true;
+            globalVolume.priority = 100;
+            globalVolume.profile  = ScriptableObject.CreateInstance<VolumeProfile>();
+        }
+
         SetupVolume();
     }
 

@@ -18,6 +18,9 @@ using System.Collections.Generic;
 /// </summary>
 public class WaveRiderGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.WaveRider;
+    protected override string LayoutId => "wave-rider";
+
     // ── Inspector Config ──────────────────────────────────────────────────
     [Header("Wave Parameters (must match OceanWater.shader)")]
     [SerializeField] private float waveAmplitude  = 1.6f;    // A

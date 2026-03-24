@@ -47,6 +47,12 @@ public class BootstrapController : MonoBehaviour
         EnsureSystem<MiniGameLoader>(miniGameLoaderPrefab, "MiniGameLoader");
         EnsureSystem<ResultsAggregator>(resultsAggregatorPrefab, "ResultsAggregator");
 
+        // Art / audio / VFX singletons — created bare if no prefab assigned
+        EnsureSystem<VFXManager>(null, "VFXManager");
+        EnsureSystem<AudioManager>(null, "AudioManager");
+        EnsureSystem<PostProcessingManager>(null, "PostProcessingManager");
+        EnsureSystem<MainThreadFlusher>(null, "MainThreadFlusher");
+
         if (logStartupInfo) LogStartupInfo();
     }
 

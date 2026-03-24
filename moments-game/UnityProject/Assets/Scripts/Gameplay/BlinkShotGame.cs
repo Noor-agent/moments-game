@@ -25,6 +25,9 @@ using System.Collections.Generic;
 /// </summary>
 public class BlinkShotGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.BlinkShot;
+    protected override string LayoutId => "blink-shot";
+
     // ── Inspector Config ──────────────────────────────────────────────────
     [Header("Shot Config")]
     [SerializeField] private float shotSpeed         = 28f;

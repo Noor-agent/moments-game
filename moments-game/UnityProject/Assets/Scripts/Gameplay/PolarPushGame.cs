@@ -19,6 +19,9 @@ using System.Collections.Generic;
 /// </summary>
 public class PolarPushGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.PolarPush;
+    protected override string LayoutId => "polar-push";
+
     // ── Inspector Config ───────────────────────────────────────────────────
     [Header("Movement")]
     [SerializeField] private float moveSpeed       = 7f;

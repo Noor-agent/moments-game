@@ -20,6 +20,9 @@ using System.Collections.Generic;
 /// </summary>
 public class GravityGrabGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.GravityGrab;
+    protected override string LayoutId => "gravity-grab";
+
     // ── Inspector Config ──────────────────────────────────────────────────
     [Header("Flight Physics")]
     [SerializeField] private float thrustForce       = 12f;

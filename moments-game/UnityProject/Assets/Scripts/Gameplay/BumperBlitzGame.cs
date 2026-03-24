@@ -17,6 +17,9 @@ using System.Collections.Generic;
 /// </summary>
 public class BumperBlitzGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.BumperBlitz;
+    protected override string LayoutId => "bumper-blitz";
+
     // ── Inspector Config ──────────────────────────────────────────────────
     [Header("Car Physics")]
     [SerializeField] private float driveForce     = 18f;
@@ -233,7 +236,7 @@ public class BumperBlitzGame : MiniGameBase
         attacker.hitsDealt++;
         AddScore(attackerId, 80);
 
-        VFXManager.Instance?.HitSpark(contactNormal, victim.visuals?.PlayerColor ?? Color.white);
+        VFXManager.Instance?.HitSpark(victim.rb.position, victim.visuals?.PlayerColor ?? Color.white);
         ControllerGateway.Instance?.SendHaptic(attackerId, attacker.isBoosting ? "strong_hit" : "hit");
         ControllerGateway.Instance?.SendHaptic(victimId, "hit");
 

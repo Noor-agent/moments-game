@@ -27,6 +27,9 @@ public class CharacterVisuals : MonoBehaviour
     private Color _playerColor;
     private bool  _isWinPulsing;
 
+    /// <summary>The player's assigned colour. Used by VFX systems for tinting.</summary>
+    public Color PlayerColor => _playerColor;
+
     private void Awake()
     {
         _propertyBlock = new MaterialPropertyBlock();

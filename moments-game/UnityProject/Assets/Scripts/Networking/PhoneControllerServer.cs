@@ -84,7 +84,8 @@ public class PhoneControllerServer : MonoBehaviour
 
             // Inject the WebSocket URL so the phone auto-connects
             string wsUrl = $"ws://{LocalIP}:{8765}/join";
-            htmlContent = htmlContent.Replace("%%WS_URL%%", wsUrl);
+            htmlContent = htmlContent.Replace("%%WS_URL%%",    wsUrl);
+            htmlContent = htmlContent.Replace("%%WS_HOST%%",   LocalIP);
             htmlContent = htmlContent.Replace("%%ROOM_TOKEN%%", SessionStateManager.Instance?.RoomToken ?? "DEMO");
 
             byte[] bytes = Encoding.UTF8.GetBytes(htmlContent);

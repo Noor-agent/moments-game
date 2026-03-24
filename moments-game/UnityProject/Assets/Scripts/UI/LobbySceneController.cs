@@ -32,7 +32,7 @@ public class LobbySceneController : MonoBehaviour
 
         _session.OnPlayerJoined += OnPlayerJoined;
         _session.OnPlayerReady += OnPlayerReady;
-        _session.OnPlayerDisconnected += OnPlayerDisconnected;
+        _session.OnPlayerLeft += OnPlayerDisconnected;
 
         RefreshAllCards();
 
@@ -140,7 +140,7 @@ public class LobbySceneController : MonoBehaviour
         {
             _session.OnPlayerJoined -= OnPlayerJoined;
             _session.OnPlayerReady -= OnPlayerReady;
-            _session.OnPlayerDisconnected -= OnPlayerDisconnected;
+            _session.OnPlayerLeft -= OnPlayerDisconnected;
         }
     }
 }

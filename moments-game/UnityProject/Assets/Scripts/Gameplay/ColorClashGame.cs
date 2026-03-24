@@ -8,6 +8,9 @@ using System.Collections.Generic;
 /// </summary>
 public class ColorClashGame : MiniGameBase
 {
+    protected override PostProcessingManager.ArenaPreset ArenaPostFX => PostProcessingManager.ArenaPreset.ColorClash;
+    protected override string LayoutId => "color-clash";
+
     [Header("Color Clash Config")]
     [SerializeField] private float moveSpeed = 9f;
     [SerializeField] private int gridWidth = 8;
