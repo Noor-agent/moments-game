@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 8
   m_Name: Mat_WaveRider_Ocean
-  m_Shader: {fileID: 11500000, guid: ocean-water-shader-guid, type: 3}
+  m_Shader: {fileID: 11500000, guid: 33e04e48c7c3ed0d3bdf94cebfb356be, type: 3}
   m_ShaderKeywords: _SURFACE_TYPE_TRANSPARENT
   m_SavedProperties:
     serializedVersion: 3

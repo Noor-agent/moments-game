@@ -216,7 +216,7 @@ RectTransform:
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: qr-code-display-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: f65fb46068cd73b10e871af54e79e87f, type: 3}
   m_Name:
   qrTextureSize: 512
   foregroundColor: {r: 0, g: 0, b: 0, a: 1}

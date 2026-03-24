@@ -55,7 +55,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: color-clash-game-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 8ffa48a200e6dfa0771621cb775a2c96, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   moveSpeed: 9

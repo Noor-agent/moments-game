@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 8
   m_Name: ColorTile_Default
-  m_Shader: {fileID: 11500000, guid: tile-paint-shader-guid, type: 3}
+  m_Shader: {fileID: 11500000, guid: 25667ba99ae9822d4dff032b68d0063f, type: 3}
   m_SavedProperties:
     serializedVersion: 3
     m_Floats:

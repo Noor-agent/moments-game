@@ -169,7 +169,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bootstrap-controller-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: bed45ecae84fc3f3510ffb8b90b5b7bf, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   autoStartSystems: 1
@@ -216,7 +216,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 200000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: session-state-manager-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d7a62b91d788fc7259451c97b3599b7, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   maxPlayers: 8
@@ -230,7 +230,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 200000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: main-thread-flusher-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 4915e32a383b6081ccae1412613f9beb, type: 3}
   m_Name:
   m_EditorClassIdentifier:
 --- !u!1 &300000000
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 300000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: moments-websocket-server-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 71f6a89046424e0d1795646d26fe7ae0, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   wsPort: 8765
@@ -320,7 +320,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 400000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: controller-gateway-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: c492fec6e1b803e56ccd57325d40e317, type: 3}
   m_Name:
   m_EditorClassIdentifier:
 --- !u!1 &500000000
@@ -364,7 +364,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 500000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: phone-controller-server-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: d1ee1b0dfe7f078066dd2b52e70e87fe, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   httpPort: 8080
@@ -409,7 +409,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 600000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: mini-game-loader-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: f3b5dd86351337ee58a43554a3748835, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   attractSceneAddress: Scenes/Attract
@@ -457,6 +457,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 700000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: results-aggregator-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 426527719f4ce51cb429b4985e7da3f7, type: 3}
   m_Name:
   m_EditorClassIdentifier:

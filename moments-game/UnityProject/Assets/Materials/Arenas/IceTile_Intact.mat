@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 8
   m_Name: IceTile_Intact
-  m_Shader: {fileID: 11500000, guid: ice-surface-shader-guid, type: 3}
+  m_Shader: {fileID: 11500000, guid: 4235394079c96b091ba7ae2c78c56bce, type: 3}
   m_ValidKeywords: []
   m_SavedProperties:
     serializedVersion: 3

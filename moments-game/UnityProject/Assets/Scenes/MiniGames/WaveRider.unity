@@ -52,7 +52,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: wave-rider-game-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: edffa32ed4a44e087f393368c134eddc, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   waveAmplitude: 1.6

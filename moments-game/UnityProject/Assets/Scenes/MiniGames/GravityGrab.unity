@@ -53,7 +53,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: gravity-grab-game-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 02b68ae738a60f06d1ddb047d1bf8806, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   thrustForce: 12

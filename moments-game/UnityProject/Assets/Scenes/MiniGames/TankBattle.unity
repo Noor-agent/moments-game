@@ -51,7 +51,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: tank-battle-game-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: cf418c66793699d246ce2d8cea550bfe, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   tankSpeed: 7

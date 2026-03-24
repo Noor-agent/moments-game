@@ -47,7 +47,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: podium-scene-controller-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: c65057a617e42711f570809fa9553dfe, type: 3}
   m_Name:
   revealDelay: 1.5
 

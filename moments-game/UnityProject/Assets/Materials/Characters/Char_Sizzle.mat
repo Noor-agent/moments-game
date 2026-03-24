@@ -5,7 +5,7 @@
 Material:
   serializedVersion: 8
   m_Name: Char_Sizzle
-  m_Shader: {fileID: 11500000, guid: character-lit-shader-guid, type: 3}
+  m_Shader: {fileID: 11500000, guid: 11de8e3488e7b66898dd2af8232385aa, type: 3}
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:

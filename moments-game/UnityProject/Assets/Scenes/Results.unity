@@ -43,7 +43,7 @@ Transform:
 MonoBehaviour:
   m_GameObject: {fileID: 100000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: results-scene-controller-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: d611a7151ff3fc171d2d5d7d543ba7f3, type: 3}
   m_Name:
   displayDuration: 8
   cardStaggerDelay: 0.3
