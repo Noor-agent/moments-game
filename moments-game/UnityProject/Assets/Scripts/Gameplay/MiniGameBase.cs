@@ -67,12 +67,25 @@ public abstract class MiniGameBase : MonoBehaviour
         Debug.Log($"[MiniGame] Setup: {GetType().Name} with {players.Count} players");
     }
 
+    /// <summary>Arena post-processing preset for this mini-game. Override in each subclass.</summary>
+    protected virtual PostProcessingManager.ArenaPreset ArenaPostFX
+        => PostProcessingManager.ArenaPreset.PolarPush;
+
+    /// <summary>Phone controller layout ID. Sent to all phones on StartGame().</summary>
+    protected virtual string LayoutId => "default";
+
     public void StartGame()
     {
         isPlaying = true;
         SessionStateManager.Instance?.StartMiniGame(definition?.gameId ?? GetType().Name);
+
+        // Apply arena-specific post-processing and send layout to phones
+        PostProcessingManager.Instance?.ApplyArenaPreset(ArenaPostFX);
+        ControllerGateway.Instance?.SetActiveGame(this);
+        ControllerGateway.Instance?.BroadcastUICommand("layout", LayoutId);
+
         OnGameStart();
-        Debug.Log($"[MiniGame] ▶ {GetType().Name} started");
+        Debug.Log($"[MiniGame] ▶ {GetType().Name} started (layout: {LayoutId})");
     }
 
     // ── Update ─────────────────────────────────────────────────────────────

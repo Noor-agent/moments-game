@@ -1,5 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+# Byte — clean tech, high-gloss plastic, cyan accent
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -8,24 +9,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    - _BaseMap:     {m_Texture: {fileID: 0}, m_Scale: {x:1,y:1}, m_Offset: {x:0,y:0}}
+    - _NormalMap:   {m_Texture: {fileID: 0}, m_Scale: {x:1,y:1}, m_Offset: {x:0,y:0}}
     m_Floats:
-    - _Smoothness: 0.45
-    - _Metallic: 0.05
-    - _NormalStrength: 0.5
-    - _RimPower: 3.5
-    - _RimIntensity: 0.8
-    - _EmissionStrength: 0
-    - _ShadowStrength: 0.65
-    - _WrapLighting: 0.3
+    - _Smoothness:      0.72   # High-gloss plastic
+    - _Metallic:        0.08
+    - _NormalStrength:  0.4
+    - _RimPower:        3.2
+    - _RimIntensity:    1.1    # Strong rim for TV visibility
+    - _EmissionStrength: 0.0
+    - _ShadowStrength:  0.60
+    - _WrapLighting:    0.35   # Softer toy-like shadows
     m_Colors:
-    - _BaseColor: {r: 0, g: 0.749, b: 1, a: 1}
-    - _RimColor: {r: 0, g: 0.749, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _BaseColor:     {r: 0.12, g: 0.62, b: 0.92, a: 1}   # Main cyan body
+    - _RimColor:      {r: 0.0,  g: 0.88, b: 1.0,  a: 1}   # Bright electric rim
+    - _EmissionColor: {r: 0.0,  g: 0.5,  b: 1.0,  a: 1}

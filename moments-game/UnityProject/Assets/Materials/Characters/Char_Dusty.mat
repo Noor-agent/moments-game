@@ -1,5 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+# Dusty — cowboy, warm leather brown, aged matte, hat brim shadow
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -8,24 +9,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    - _BaseMap:     {m_Texture: {fileID: 0}, m_Scale: {x:1,y:1}, m_Offset: {x:0,y:0}}
+    - _NormalMap:   {m_Texture: {fileID: 0}, m_Scale: {x:1,y:1}, m_Offset: {x:0,y:0}}
     m_Floats:
-    - _Smoothness: 0.45
-    - _Metallic: 0.05
-    - _NormalStrength: 0.5
-    - _RimPower: 3.5
-    - _RimIntensity: 0.8
-    - _EmissionStrength: 0
-    - _ShadowStrength: 0.65
-    - _WrapLighting: 0.3
+    - _Smoothness:      0.28   # Worn leather — rough and matte
+    - _Metallic:        0.06
+    - _NormalStrength:  0.8    # Strong leather surface detail
+    - _RimPower:        2.5
+    - _RimIntensity:    0.70
+    - _EmissionStrength: 0.0
+    - _ShadowStrength:  0.72
+    - _WrapLighting:    0.38
     m_Colors:
-    - _BaseColor: {r: 0.824, g: 0.412, b: 0.118, a: 1}
-    - _RimColor: {r: 0.824, g: 0.412, b: 0.118, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _BaseColor:     {r: 0.54, g: 0.32, b: 0.14, a: 1}   # Warm saddle leather
+    - _RimColor:      {r: 0.85, g: 0.65, b: 0.30, a: 1}   # Warm sunset rim
+    - _EmissionColor: {r: 0.6,  g: 0.4,  b: 0.0,  a: 1}

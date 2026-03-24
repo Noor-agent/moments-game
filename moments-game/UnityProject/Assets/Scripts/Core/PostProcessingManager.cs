@@ -103,7 +103,137 @@ public class PostProcessingManager : MonoBehaviour
         Debug.Log("[PostFX] Volume configured for Polar Push");
     }
 
-    // ── Gameplay Reactions ─────────────────────────────────────────────────
+    // ── Per-Arena Presets ──────────────────────────────────────────────────
+
+    public enum ArenaPreset
+    {
+        PolarPush,
+        ColorClash,
+        TankBattle,
+        WaveRider,
+        BumperBlitz,
+        BlinkShot,
+        GravityGrab,
+        Lobby,
+        Podium,
+    }
+
+    /// <summary>
+    /// Transition post-processing to match a mini-game's arena aesthetic.
+    /// Call from MiniGameBase.OnGameStart() or MiniGameLoader scene activation.
+    /// </summary>
+    public void ApplyArenaPreset(ArenaPreset preset, float transitionTime = 1.2f)
+    {
+        StopAllCoroutines();
+        StartCoroutine(TransitionPreset(preset, transitionTime));
+    }
+
+    private IEnumerator TransitionPreset(ArenaPreset preset, float duration)
+    {
+        // Capture current values
+        float startBloom      = _bloom?.intensity.value ?? ppBloomIntensity;
+        float startChroma     = _chroma?.intensity.value ?? ppChromaticBase;
+        float startContrast   = _colorAdj?.contrast.value ?? 8f;
+        float startSaturation = _colorAdj?.saturation.value ?? 12f;
+        Color startFilter     = _colorAdj?.colorFilter.value ?? Color.white;
+
+        // Target values per arena
+        float tBloom, tChroma, tContrast, tSat;
+        Color tFilter;
+
+        switch (preset)
+        {
+            case ArenaPreset.ColorClash:
+                // Warm warehouse — vivid, saturated, high contrast paint colours
+                tBloom    = 1.2f; tChroma = 0.02f;
+                tContrast = 15f;  tSat    = 28f;
+                tFilter   = new Color(1.0f, 0.96f, 0.88f);
+                break;
+
+            case ArenaPreset.TankBattle:
+                // Harsh desert sun — warm, high exposure, sharp shadows
+                tBloom    = 0.9f; tChroma = 0.01f;
+                tContrast = 20f;  tSat    = 8f;
+                tFilter   = new Color(1.0f, 0.94f, 0.78f);
+                break;
+
+            case ArenaPreset.WaveRider:
+                // Tropical sunrise — warm bloom, high saturation, low chroma
+                tBloom    = 2.2f; tChroma = 0.02f;
+                tContrast = 12f;  tSat    = 22f;
+                tFilter   = new Color(1.0f, 0.88f, 0.72f);
+                _dof?.gaussianStart.Override(30f);
+                _dof?.gaussianEnd.Override(100f);
+                break;
+
+            case ArenaPreset.BumperBlitz:
+                // Neon carnival night — heavy bloom, strong chroma, purple tint
+                tBloom    = 2.8f; tChroma = 0.06f;
+                tContrast = 18f;  tSat    = 35f;
+                tFilter   = new Color(0.88f, 0.78f, 1.0f);
+                break;
+
+            case ArenaPreset.BlinkShot:
+                // Cyberpunk — heavy neon bloom, max chroma, cool purple
+                tBloom    = 3.2f; tChroma = 0.08f;
+                tContrast = 22f;  tSat    = 30f;
+                tFilter   = new Color(0.82f, 0.75f, 1.0f);
+                break;
+
+            case ArenaPreset.GravityGrab:
+                // Deep space — minimal bloom (stars), near-zero chroma, deep blue
+                tBloom    = 1.5f; tChroma = 0.03f;
+                tContrast = 25f;  tSat    = 15f;
+                tFilter   = new Color(0.78f, 0.88f, 1.0f);
+                _dof?.gaussianStart.Override(80f);
+                _dof?.gaussianEnd.Override(300f);
+                break;
+
+            case ArenaPreset.Lobby:
+                // Warm friendly — soft bloom, neutral
+                tBloom    = 1.0f; tChroma = 0.01f;
+                tContrast = 5f;   tSat    = 10f;
+                tFilter   = new Color(1.0f, 0.98f, 0.94f);
+                break;
+
+            case ArenaPreset.Podium:
+                // Celebration — warm golden, heavy bloom
+                tBloom    = 3.5f; tChroma = 0.02f;
+                tContrast = 8f;   tSat    = 20f;
+                tFilter   = new Color(1.0f, 0.95f, 0.75f);
+                break;
+
+            default: // PolarPush
+                tBloom    = ppBloomIntensity; tChroma = ppChromaticBase;
+                tContrast = 8f;               tSat    = 12f;
+                tFilter   = new Color(0.88f, 0.94f, 1.0f);
+                break;
+        }
+
+        // Lerp to target
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t  = Mathf.SmoothStep(0, 1, elapsed / duration);
+
+            _bloom?.intensity.Override(Mathf.Lerp(startBloom, tBloom, t));
+            _chroma?.intensity.Override(Mathf.Lerp(startChroma, tChroma, t));
+            _colorAdj?.contrast.Override(Mathf.Lerp(startContrast, tContrast, t));
+            _colorAdj?.saturation.Override(Mathf.Lerp(startSaturation, tSat, t));
+            _colorAdj?.colorFilter.Override(Color.Lerp(startFilter, tFilter, t));
+
+            yield return null;
+        }
+
+        _bloom?.intensity.Override(tBloom);
+        _chroma?.intensity.Override(tChroma);
+        _colorAdj?.contrast.Override(tContrast);
+        _colorAdj?.saturation.Override(tSat);
+        _colorAdj?.colorFilter.Override(tFilter);
+
+        Debug.Log($"[PostFX] Transitioned to preset: {preset}");
+    }
 
     /// <summary>Trigger chromatic aberration spike on player impact.</summary>
     public void OnPlayerHit(float strength = 1f)

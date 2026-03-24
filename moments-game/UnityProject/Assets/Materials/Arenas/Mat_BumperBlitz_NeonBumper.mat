@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_Name: Mat_BumperBlitz_NeonBumper
+  m_Shader: {fileID: 4800000, guid: 0000000000000000f000000000000000, type: 0}
+  m_SavedProperties:
+    serializedVersion: 3
+    m_Floats:
+    - _Smoothness: 0.85
+    - _Metallic: 0.6
+    m_Colors:
+    - _BaseColor:     {r: 0.05, g: 0.05, b: 0.1, a: 1}
+    - _RimColor:      {r: 0.0,  g: 1.0,  b: 0.8, a: 1}
+    - _EmissionColor: {r: 0.0,  g: 0.8,  b: 1.0, a: 1}

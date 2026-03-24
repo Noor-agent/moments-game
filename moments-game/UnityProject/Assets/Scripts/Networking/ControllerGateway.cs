@@ -300,10 +300,10 @@ public class ControllerGateway : MonoBehaviour
         wsServer?.Send(clientId, json);
     }
 
-    /// <summary>Broadcast a countdown tick to all phones (shows number on screen).</summary>
-    public void BroadcastCountdown(int count)
+    /// <summary>Broadcast a UI command to all connected phones.</summary>
+    public void BroadcastUICommand(string command, string payload)
     {
-        var msg = new UICommandMsg { type = "ui_command", command = "countdown", payload = count.ToString() };
+        var msg = new UICommandMsg { type = "ui_command", command = command, payload = payload };
         wsServer?.Broadcast(JsonUtility.ToJson(msg));
     }
 

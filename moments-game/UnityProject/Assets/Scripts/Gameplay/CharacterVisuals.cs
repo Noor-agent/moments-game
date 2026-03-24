@@ -40,16 +40,31 @@ public class CharacterVisuals : MonoBehaviour
     public void Initialize(PlayerData player, CharacterDefinition def)
     {
         _playerColor = player.playerColor;
+        Color accentColor = def != null ? def.accentColor : _playerColor * 1.5f;
 
-        // Set rim color via MaterialPropertyBlock (no material instancing)
-        _propertyBlock.SetColor(RimColorId, _playerColor);
-        _propertyBlock.SetFloat(EmissionStrId, 0f);
-        characterRenderer.SetPropertyBlock(_propertyBlock);
+        // Build procedural hero geometry
+        if (def != null && !string.IsNullOrEmpty(def.heroId))
+        {
+            CharacterArtBuilder.Build(
+                def.heroId,
+                gameObject,
+                _playerColor,
+                accentColor,
+                characterRenderer?.sharedMaterial);
+        }
+
+        // Set rim color via MaterialPropertyBlock on main renderer (no material instancing)
+        if (characterRenderer != null)
+        {
+            _propertyBlock.SetColor(RimColorId, _playerColor);
+            _propertyBlock.SetFloat(EmissionStrId, 0f);
+            characterRenderer.SetPropertyBlock(_propertyBlock);
+        }
 
         // Name label above head
         if (nameLabel != null)
         {
-            nameLabel.text = player.nickname;
+            nameLabel.text  = player.nickname;
             nameLabel.color = _playerColor;
         }
 

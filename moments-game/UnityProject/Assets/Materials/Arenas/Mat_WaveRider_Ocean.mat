@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_Name: Mat_WaveRider_Ocean
+  m_Shader: {fileID: 11500000, guid: ocean-water-shader-guid, type: 3}
+  m_ShaderKeywords: _SURFACE_TYPE_TRANSPARENT
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _NormalMap1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 6, y: 6}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 3, y: 3}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _NormalScale1: 1.0
+    - _NormalScale2: 0.7
+    - _WaveHeight: 1.5
+    - _Smoothness: 0.92
+    - _FoamThreshold: 0.72
+    m_Vectors:
+    - _ScrollSpeed1: {x: 0.04, y: 0.02, z: 0, w: 0}
+    - _ScrollSpeed2: {x: -0.02, y: 0.05, z: 0, w: 0}
+    - _WaveDir: {x: 0.707, y: 0, z: 0.707, w: 0}
+    m_Colors:
+    - _ShallowColor: {r: 0.0,  g: 0.78, b: 0.82, a: 0.85}
+    - _DeepColor:    {r: 0.0,  g: 0.18, b: 0.52, a: 0.95}
+    - _FoamColor:    {r: 0.95, g: 0.97, b: 1.0,  a: 1.0}

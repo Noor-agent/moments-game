@@ -47,18 +47,41 @@ public class VFXManager : MonoBehaviour
 
     private void BuildPools()
     {
+        // Build a set of all types that have a prefab assigned
+        var assignedTypes = new System.Collections.Generic.HashSet<VFXType>();
+        foreach (var entry in vfxEntries)
+            if (entry.prefab != null) assignedTypes.Add(entry.type);
+
+        // First pass: inspector-assigned prefabs
         foreach (var entry in vfxEntries)
         {
+            if (entry.prefab == null) continue;
             var q = new System.Collections.Generic.Queue<GameObject>();
             for (int i = 0; i < entry.poolSize; i++)
             {
-                if (entry.prefab == null) continue;
                 var go = Instantiate(entry.prefab, transform);
                 go.SetActive(false);
                 go.name = $"{entry.type}_{i:D2}";
                 q.Enqueue(go);
             }
             _pools[entry.type] = q;
+        }
+
+        // Second pass: procedural fallback for any unassigned types
+        foreach (VFXType type in System.Enum.GetValues(typeof(VFXType)))
+        {
+            if (_pools.ContainsKey(type)) continue; // already built
+
+            int poolSize = 12; // default fallback pool size
+            var q = new System.Collections.Generic.Queue<GameObject>();
+            for (int i = 0; i < poolSize; i++)
+            {
+                var go = VFXBuilder.Build(type, transform);
+                go.name = $"{type}_{i:D2}_proc";
+                q.Enqueue(go);
+            }
+            _pools[type] = q;
+            Debug.Log($"[VFX] Procedural fallback pool built for: {type} (size {poolSize})");
         }
     }
 
