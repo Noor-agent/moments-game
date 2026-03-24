@@ -162,10 +162,14 @@ public class AudioManager : MonoBehaviour
 
     // ── Haptic-synced shortcuts ────────────────────────────────────────────
 
-    public void OnDash()           => PlaySFX("dash");
-    public void OnHit(Vector3 pos) => PlaySFX("hit", pos);
-    public void OnElimination()    => PlaySFX("elimination");
+    public void OnDash()                 => PlaySFX("dash");
+    public void OnHit(Vector3 pos)       => PlaySFX("hit", pos);
+    public void OnElimination()          => PlaySFX("elimination");
     public void OnTileCrack(Vector3 pos) => PlaySFX("ice_crack", pos);
+    public void OnCountdown()            => PlaySFX("countdown");
+    public void OnGameStart()            => PlaySFX("game_start");
+    public void OnWin()                  => PlaySFX("win");
+    public void OnPickup()               => PlaySFX("pickup");
     public void OnTileShatter(Vector3 pos) => PlaySFX("ice_shatter", pos, 1.2f);
     public void OnCountdown()      => PlaySFX("countdown");
     public void OnGameStart()      => PlaySFX("game_start");

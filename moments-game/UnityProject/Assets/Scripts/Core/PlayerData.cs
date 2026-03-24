@@ -27,9 +27,12 @@ public class PlayerData
 
     // ── Score ──────────────────────────────────────────────────────────────
     public int    totalScore;       // Accumulated across all rounds this session
+    public int    sessionScore;     // Alias used by ResultsAggregator (same as totalScore)
     public int    lastRoundScore;   // Points earned in the most recent mini-game
+    public int    currentRoundScore;// Live round score (alias for lastRoundScore)
     public int    wins;             // Number of mini-games won
     public int    elimOrder;        // Elimination order this round (1 = first out)
+    public int    placement;        // Session/round placement (1 = 1st)
 
     // ── Character reference ────────────────────────────────────────────────
     [NonSerialized] public CharacterDefinition characterDef;  // Resolved at game start
@@ -40,9 +43,11 @@ public class PlayerData
     /// <summary>Reset per-round state before each mini-game.</summary>
     public void ResetRoundState()
     {
-        lastRoundScore = 0;
-        elimOrder      = 0;
-        isReady        = false;
+        lastRoundScore   = 0;
+        currentRoundScore = 0;
+        elimOrder        = 0;
+        placement        = 0;
+        isReady          = false;
     }
 
     /// <summary>CSS hex string for this player's color (for sending to phone UI).</summary>

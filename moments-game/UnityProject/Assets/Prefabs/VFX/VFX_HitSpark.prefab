@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+# ══════════════════════════════════════════════════════════
+# VFX_HitSpark — pooled particle burst, player-color tinted.
+# Pooled by VFXManager (pool size 16). Auto-returned after 1.5s.
+# ══════════════════════════════════════════════════════════
+--- !u!1 &1
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4}
+  - component: {fileID: 198}
+  m_Layer: 0
+  m_Name: VFX_HitSpark
+  m_IsActive: 0
+--- !u!4 &4
+Transform:
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+--- !u!198 &198
+ParticleSystem:
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      serializedVersion: 2
+      minMaxState: 0
+      scalar: 0.5
+    startSpeed:
+      serializedVersion: 2
+      minMaxState: 1
+      scalar: 6
+      minScalar: 2
+    startSize:
+      serializedVersion: 2
+      minMaxState: 1
+      scalar: 0.15
+      minScalar: 0.05
+    startColor:
+      serializedVersion: 2
+      minMaxState: 0
+      color: {r: 1, g: 1, b: 1, a: 1}
+    maxNumParticles: 30
+    looping: 0
+    prewarm: 0
+    playOnAwake: 0
+    duration: 0.2
+    gravityModifier:
+      serializedVersion: 2
+      scalar: 0.5
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      serializedVersion: 2
+      scalar: 0
+    bursts:
+    - time: 0
+      cycleCount: 1
+      repeatInterval: 0.01
+      count:
+        serializedVersion: 2
+        minMaxState: 0
+        scalar: 20
+
+# ══════════════════════════════════════════════════════════
+# VFX_DashTrail (child) — brief ribbon on dash direction
+--- !u!1 &100
+GameObject:
+  m_Name: VFX_DashTrail_Child
+  m_IsActive: 0
+  m_Component:
+  - component: {fileID: 101}
+  - component: {fileID: 102}
+--- !u!4 &101
+Transform:
+  m_Father: {fileID: 0}
+--- !u!198 &102
+ParticleSystem:
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      serializedVersion: 2
+      scalar: 0.3
+    startSpeed:
+      serializedVersion: 2
+      scalar: 0
+    startSize:
+      serializedVersion: 2
+      scalar: 0.2
+    maxNumParticles: 40
+    looping: 0
+    duration: 0.15
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      serializedVersion: 2
+      scalar: 150
+    bursts: []

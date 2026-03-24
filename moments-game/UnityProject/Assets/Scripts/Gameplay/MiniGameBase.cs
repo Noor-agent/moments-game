@@ -156,27 +156,31 @@ public abstract class MiniGameBase : MonoBehaviour
 [System.Serializable]
 public class InputMessage
 {
-    public string type      = "input";
-    public string playerId;     // Filled in by Gateway before routing
+    public string type       = "input";
+    public string playerId;      // Filled in by Gateway before routing
 
     // Movement (joystick: -1 to +1)
     public float moveX;
     public float moveY;
 
-    // Actions
-    public bool  dashPressed;
-    public bool  actionPressed;   // Context-specific (fire, grab, bump)
-    public bool  action2Pressed;  // Secondary action
+    // Right stick / aim joystick (Tank Battle twin-stick)
+    public float aimX;
+    public float aimY;
 
-    // Tilt (for Wave Rider)
+    // Actions (true on the frame the button is held)
+    public bool  actionPressed;   // Primary: dash, grab, bump, fire, trick
+    public bool  action2Pressed;  // Secondary: shield, slam
+    public bool  duckPressed;     // Wave Rider duck/crouch
+
+    // Tilt (Wave Rider balance)
     public float tiltX;
     public float tiltY;
 
-    // Touch coordinates (for Blink Shot aiming)
+    // Touch coordinates normalised -1..1 (Blink Shot aim tap on pad)
     public float touchX;
     public float touchY;
     public bool  touchDown;
 
-    // Timestamp (phone-side, for latency calculation)
+    // Timestamp (phone-side, for latency calc)
     public long  ts;
 }

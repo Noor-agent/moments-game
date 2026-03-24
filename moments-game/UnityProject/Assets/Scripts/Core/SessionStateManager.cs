@@ -52,6 +52,18 @@ public class SessionStateManager : MonoBehaviour
         Podium
     }
 
+    /// <summary>Alias enum used by scene controllers — maps 1:1 to SessionPhase.</summary>
+    public enum LobbyState
+    {
+        Attract       = 0,
+        Lobby         = 1,
+        CharacterSelect = 2,
+        Countdown     = 3,
+        InGame        = 4,
+        Results       = 5,
+        Podium        = 6
+    }
+
     // ── Events ─────────────────────────────────────────────────────────────
     public event Action<SessionPhase> OnStateChanged;
     public event Action<PlayerData>   OnPlayerJoined;
@@ -151,8 +163,13 @@ public class SessionStateManager : MonoBehaviour
     public void AddScore(string playerId, int points)
     {
         var p = GetPlayer(playerId);
-        if (p != null) p.totalScore += points;
+        if (p == null) return;
+        p.totalScore   += points;
+        p.sessionScore  = p.totalScore; // Keep alias in sync
     }
+
+    /// <summary>Overload accepting LobbyState enum (used by scene controllers).</summary>
+    public void ChangeState(LobbyState newState) => ChangePhase((SessionPhase)(int)newState);
 
     public List<PlayerData> GetRankedPlayers()
     {

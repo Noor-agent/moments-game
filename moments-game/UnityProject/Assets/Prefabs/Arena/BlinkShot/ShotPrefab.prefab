@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+# ══════════════════════════════════════════════════════════
+# ShotPrefab — Blink Shot projectile.
+# Small glowing sphere, travels at 28m/s.
+# Consumed on collision with player hitbox.
+# BlinkShotGame.FireShot() instantiates → CannonballOwner sets OwnerId.
+# ══════════════════════════════════════════════════════════
+--- !u!1 &1
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4}
+  - component: {fileID: 33}
+  - component: {fileID: 23}
+  - component: {fileID: 136}
+  - component: {fileID: 54}
+  - component: {fileID: 96}
+  m_Layer: 0
+  m_Name: BlinkShot_Projectile
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &4
+Transform:
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_Father: {fileID: 0}
+--- !u!33 &33
+MeshFilter:
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &23
+MeshRenderer:
+  m_Materials:
+  - {fileID: 11400000, guid: blinkshot-bolt-mat-guid, type: 2}
+--- !u!136 &136
+SphereCollider:
+  m_Radius: 0.5
+  m_IsTrigger: 1
+--- !u!54 &54
+Rigidbody:
+  m_Mass: 0.01
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_CollisionDetection: 2
+--- !u!96 &96
+TrailRenderer:
+  m_Time: 0.1
+  m_StartWidth: 0.08
+  m_EndWidth:   0.0
+  m_Materials:
+  - {fileID: 11400000, guid: trail-cyan-mat-guid, type: 2}

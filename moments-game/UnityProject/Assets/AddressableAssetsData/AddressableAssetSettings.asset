@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: addressable-asset-settings-guid, type: 3}
+  m_Name: AddressableAssetSettings
+  m_EditorClassIdentifier:
+
+  # ── Build settings ────────────────────────────────────────────────
+  buildRemoteCatalog: 0
+  overridePlayerVersion: 0
+  profileName: Default
+  buildAddressablesWithPlayerBuild: 0   # false = explicit build step
+
+  # ── Groups ────────────────────────────────────────────────────────
+  groups:
+  - {fileID: 100000001}  # BuiltInData (default Unity group)
+  - {fileID: 200000001}  # Moments_CoreScenes
+  - {fileID: 300000001}  # Moments_MiniGameScenes
+
+  # ── Profile variables ──────────────────────────────────────────────
+  profileSettings:
+    profiles:
+    - profileName: Default
+      variables:
+        LocalBuildPath: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+        LocalLoadPath:  '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+
+--- !u!114 &100000001
+MonoBehaviour:
+  m_Name: BuiltInData
+  m_Script: {fileID: 11500000, guid: built-in-data-group-guid, type: 3}
+  m_Group: Default
+
+--- !u!114 &200000001
+MonoBehaviour:
+  m_Name: Moments_CoreScenes
+  m_Script: {fileID: 11500000, guid: addressable-asset-group-guid, type: 3}
+  m_EditorClassIdentifier:
+  m_Name: Moments_CoreScenes
+  entries:
+  - address: Scenes/Attract
+    assetPath: Assets/Scenes/Attract.unity
+    guid: 00000000000000000000000000000005
+    labels: [core]
+  - address: Scenes/Lobby
+    assetPath: Assets/Scenes/Lobby.unity
+    guid: 00000000000000000000000000000002
+    labels: [core]
+  - address: Scenes/Results
+    assetPath: Assets/Scenes/Results.unity
+    guid: 00000000000000000000000000000003
+    labels: [core]
+  - address: Scenes/Podium
+    assetPath: Assets/Scenes/Podium.unity
+    guid: 00000000000000000000000000000004
+    labels: [core]
+
+--- !u!114 &300000001
+MonoBehaviour:
+  m_Name: Moments_MiniGameScenes
+  m_Script: {fileID: 11500000, guid: addressable-asset-group-guid, type: 3}
+  m_EditorClassIdentifier:
+  m_Name: Moments_MiniGameScenes
+  entries:
+  - address: Scenes/MiniGames/PolarPush
+    assetPath: Assets/Scenes/MiniGames/PolarPush.unity
+    guid: 00000000000000000000000000000010
+    labels: [minigame]
+  - address: Scenes/MiniGames/ColorClash
+    assetPath: Assets/Scenes/MiniGames/ColorClash.unity
+    guid: 00000000000000000000000000000020
+    labels: [minigame]
+  - address: Scenes/MiniGames/TankBattle
+    assetPath: Assets/Scenes/MiniGames/TankBattle.unity
+    guid: 00000000000000000000000000000030
+    labels: [minigame]
+  - address: Scenes/MiniGames/WaveRider
+    assetPath: Assets/Scenes/MiniGames/WaveRider.unity
+    guid: 00000000000000000000000000000040
+    labels: [minigame]
+  - address: Scenes/MiniGames/BumperBlitz
+    assetPath: Assets/Scenes/MiniGames/BumperBlitz.unity
+    guid: 00000000000000000000000000000050
+    labels: [minigame]
+  - address: Scenes/MiniGames/BlinkShot
+    assetPath: Assets/Scenes/MiniGames/BlinkShot.unity
+    guid: 00000000000000000000000000000060
+    labels: [minigame]
+  - address: Scenes/MiniGames/GravityGrab
+    assetPath: Assets/Scenes/MiniGames/GravityGrab.unity
+    guid: 00000000000000000000000000000070
+    labels: [minigame]

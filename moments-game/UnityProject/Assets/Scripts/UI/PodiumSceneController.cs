@@ -79,13 +79,16 @@ public class PodiumSceneController : MonoBehaviour
     {
         for (int i = 0; i < standings.Count; i++)
         {
-            var msg = System.Text.Json.JsonSerializer.Serialize(new
+            string message = i switch
             {
-                type = "podium",
-                placement = i + 1,
-                message = i == 0 ? "You won! 🏆" : i == 1 ? "2nd place! 🥈" : i == 2 ? "3rd place! 🥉" : "Thanks for playing!"
-            });
-            ControllerGateway.Instance?.SendToPlayer(standings[i].playerId, msg);
+                0 => "You won! \U0001f3c6",
+                1 => "2nd place! \U0001f948",
+                2 => "3rd place! \U0001f949",
+                _ => "Thanks for playing!"
+            };
+            // Use UICommandMsg via ControllerGateway to avoid System.Text.Json
+            ControllerGateway.Instance?.SendUICommand(standings[i].playerId, "podium",
+                $"{i + 1}|{message}");
         }
     }
 
@@ -99,7 +102,6 @@ public class PodiumSceneController : MonoBehaviour
     private void OnNewSession()
     {
         ResultsAggregator.Instance?.Reset();
-        // Clear all players and return to attract
         SessionStateManager.Instance?.Players.Clear();
         SessionStateManager.Instance?.ChangeState(SessionStateManager.LobbyState.Attract);
         _ = MiniGameLoader.Instance?.LoadShellScene("Scenes/Attract");

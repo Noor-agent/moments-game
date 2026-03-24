@@ -5,870 +5,797 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Moments Controller</title>
   <style>
-    /* ─── Reset & Base ─── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     :root {
-      --player-color: #00BFFF;
-      --bg: #0A0A0A;
-      --text: #FFFFFF;
-      --frame-width: 8px;
+      --color: #00BFFF;
+      --bg: #0A0A0F;
+      --fg: #FFFFFF;
+      --safe-top:    env(safe-area-inset-top,    0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     html, body {
-      width: 100%; height: 100%;
+      width: 100%; height: 100dvh;
       overflow: hidden;
       background: var(--bg);
-      color: var(--text);
-      font-family: 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+      color: var(--fg);
+      font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
       touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
+      -webkit-user-select: none; user-select: none;
     }
 
-    /* ─── Player Color Frame (8px border) ─── */
-    #frame-border {
-      position: fixed;
-      inset: 0;
-      border: var(--frame-width) solid var(--player-color);
-      pointer-events: none;
-      z-index: 999;
-      box-shadow: inset 0 0 30px rgba(255,255,255,0.05);
-      transition: border-color 0.3s ease;
+    /* Player color frame */
+    #frame {
+      position: fixed; inset: 0;
+      border: 6px solid var(--color);
+      pointer-events: none; z-index: 9990;
+      transition: border-color 0.4s;
     }
 
-    /* ─── Screens ─── */
-    .screen {
-      display: none;
-      position: fixed;
-      inset: 0;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      gap: 20px;
-    }
-    .screen.active { display: flex; }
-
-    /* ─── Join Screen ─── */
-    #screen-join .logo {
-      font-size: 42px;
-      font-weight: 900;
-      letter-spacing: -2px;
-      color: var(--player-color);
-    }
-    #screen-join .subtitle {
-      font-size: 16px;
-      opacity: 0.6;
-      text-align: center;
-    }
-    #nickname-input {
-      background: rgba(255,255,255,0.08);
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 16px;
-      color: #fff;
-      font-size: 22px;
-      font-weight: 600;
-      padding: 16px 24px;
-      width: 100%;
-      max-width: 320px;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    #nickname-input:focus { border-color: var(--player-color); }
-    #nickname-input::placeholder { opacity: 0.3; }
-
-    .btn-primary {
-      background: var(--player-color);
-      color: #000;
-      font-size: 22px;
-      font-weight: 800;
-      padding: 18px 40px;
-      border-radius: 50px;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      max-width: 320px;
-      letter-spacing: 0.5px;
-      transition: transform 0.1s, opacity 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
-
-    /* ─── Character Select Screen ─── */
-    #screen-chars {
-      gap: 0;
-      padding: 0;
-    }
-    .char-header {
-      padding: 24px 24px 12px;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .char-header .avatar {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--player-color);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-    }
-    .char-header .name-tag { font-size: 18px; font-weight: 700; }
-
-    .char-carousel {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      overflow-x: scroll;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      gap: 16px;
-      padding: 16px 24px;
-      width: 100%;
-    }
-    .char-carousel::-webkit-scrollbar { display: none; }
-
-    .char-card {
-      scroll-snap-align: center;
-      flex: 0 0 200px;
-      height: 280px;
-      border-radius: 24px;
-      background: rgba(255,255,255,0.06);
-      border: 2px solid rgba(255,255,255,0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 20px;
-      transition: border-color 0.2s, transform 0.2s;
-      cursor: pointer;
-    }
-    .char-card.selected {
-      border-color: var(--player-color);
-      background: rgba(var(--player-color-rgb), 0.12);
-      transform: scale(1.02);
-    }
-    .char-card.taken {
-      opacity: 0.35;
-      pointer-events: none;
-    }
-    .char-card .char-emoji { font-size: 64px; }
-    .char-card .char-name { font-size: 22px; font-weight: 800; }
-    .char-card .char-desc { font-size: 12px; opacity: 0.5; text-align: center; line-height: 1.4; }
-    .char-card .taken-badge {
-      background: rgba(255,0,0,0.7);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: 1px;
-    }
-
-    .char-footer {
-      padding: 16px 24px 32px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    #btn-lock {
-      background: rgba(255,255,255,0.08);
-      border: 2px solid rgba(255,255,255,0.15);
-      color: #fff;
-    }
-    #btn-lock.ready-to-lock {
-      background: var(--player-color);
-      border-color: var(--player-color);
-      color: #000;
-    }
-
-    /* ─── Ready Screen ─── */
-    #screen-ready {
-      gap: 24px;
-      text-align: center;
-    }
-    .ready-hero-emoji { font-size: 96px; }
-    .ready-hero-name { font-size: 32px; font-weight: 900; }
-    .ready-label { font-size: 18px; opacity: 0.5; }
-    .ready-pulse {
-      width: 120px; height: 120px;
-      border-radius: 50%;
-      background: var(--player-color);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 40px;
-      animation: pulse 1.5s infinite ease-in-out;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.08); opacity: 0.85; }
-    }
-    .waiting-text { font-size: 16px; opacity: 0.4; }
-
-    /* ─── Game Controller Screens ─── */
-    #screen-controller {
-      padding: 0;
-      background: var(--bg);
-    }
-
-    /* Joystick zone */
-    .joystick-zone {
-      position: absolute;
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      border: 2px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .joystick-knob {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: var(--player-color);
-      opacity: 0.85;
-      transition: transform 0.05s;
-      pointer-events: none;
-    }
-
-    /* Action buttons */
-    .action-btn {
-      position: absolute;
-      width: 88px; height: 88px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.07);
-      border: 3px solid var(--player-color);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      color: var(--player-color);
-      font-weight: 900;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: none;
-      transition: background 0.08s, transform 0.08s;
-    }
-    .action-btn:active, .action-btn.pressed {
-      background: var(--player-color);
-      color: #000;
-      transform: scale(0.92);
-    }
-
-    /* HUD top bar */
-    .controller-hud {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      background: rgba(0,0,0,0.4);
-    }
-    .hud-avatar { font-size: 24px; }
-    .hud-name { font-size: 14px; font-weight: 700; }
-    .hud-score {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--player-color);
-    }
-
-    /* Connection status */
-    #conn-status {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: #f44;
-      z-index: 1000;
+    /* Connection dot */
+    #dot {
+      position: fixed; top: calc(var(--safe-top) + 12px); right: 18px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #ff4444; z-index: 9999;
       transition: background 0.3s;
     }
-    #conn-status.connected { background: #4f4; }
+    #dot.ok { background: #44ff88; }
+
+    /* ── Screens ── */
+    .screen {
+      display: none; position: fixed; inset: 0;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: calc(var(--safe-top) + 20px) 28px calc(var(--safe-bottom) + 20px);
+      gap: 18px;
+    }
+    .screen.on { display: flex; }
+
+    /* JOIN */
+    #s-join .logo {
+      font-size: 52px; font-weight: 900; letter-spacing: -3px;
+      color: var(--color);
+    }
+    #s-join .sub { font-size: 15px; opacity: 0.45; text-align: center; }
+    #s-join input {
+      background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 18px; color: #fff; font-size: 24px; font-weight: 700;
+      padding: 18px 24px; width: 100%; max-width: 340px;
+      text-align: center; outline: none;
+      transition: border-color 0.2s;
+    }
+    #s-join input:focus { border-color: var(--color); }
+    #s-join input::placeholder { opacity: 0.25; }
+
+    .btn {
+      background: var(--color); color: #000;
+      font-size: 20px; font-weight: 900;
+      padding: 18px 36px; border-radius: 50px; border: none;
+      width: 100%; max-width: 340px; cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.1s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { opacity: 0.85; transform: scale(0.96); }
+    .btn.ghost {
+      background: transparent;
+      border: 2px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* CHAR SELECT */
+    #s-chars { gap: 0; padding: 0; }
+    .char-top {
+      padding: calc(var(--safe-top) + 16px) 24px 10px;
+      width: 100%; display: flex; align-items: center; gap: 14px;
+    }
+    .ava {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--color); display: flex; align-items: center;
+      justify-content: center; font-size: 22px; transition: background 0.3s;
+    }
+    .char-name-tag { font-size: 17px; font-weight: 700; }
+
+    .carousel {
+      flex: 1; display: flex; align-items: center;
+      overflow-x: scroll; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      gap: 14px; padding: 12px 24px; width: 100%;
+    }
+    .carousel::-webkit-scrollbar { display: none; }
+
+    .ccard {
+      scroll-snap-align: center; flex: 0 0 190px; height: 265px;
+      border-radius: 22px; background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.08);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px; padding: 18px;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      cursor: pointer;
+    }
+    .ccard.sel {
+      border-color: var(--color);
+      background: rgba(0,191,255,0.1);
+      transform: scale(1.02);
+    }
+    .ccard.taken { opacity: 0.28; pointer-events: none; }
+    .ccard em { font-size: 60px; font-style: normal; }
+    .ccard strong { font-size: 20px; font-weight: 800; }
+    .ccard span { font-size: 11px; opacity: 0.45; text-align: center; line-height: 1.4; }
+    .ccard .taken-badge {
+      background: rgba(255,40,40,0.7); color: #fff;
+      font-size: 10px; font-weight: 800;
+      padding: 3px 9px; border-radius: 20px; letter-spacing: 1px;
+    }
+    .char-bot {
+      padding: 12px 24px calc(var(--safe-bottom) + 24px);
+      width: 100%; display: flex; flex-direction: column; gap: 10px;
+    }
+    #btn-lock.rdy { background: var(--color); color: #000; }
+    #btn-lock:not(.rdy) { background: transparent; border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); }
+
+    /* READY */
+    #s-ready { text-align: center; gap: 20px; }
+    #s-ready .big { font-size: 88px; }
+    #s-ready .hero-n { font-size: 30px; font-weight: 900; color: var(--color); }
+    .pulse-ring {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: var(--color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; animation: pulse 1.6s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); } 50% { transform: scale(1.07); }
+    }
+    #s-ready .wait { font-size: 14px; opacity: 0.35; }
+
+    /* CONTROLLER */
+    #s-ctrl { padding: 0; background: var(--bg); }
+    .hud {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: calc(var(--safe-top) + 52px);
+      padding-top: var(--safe-top);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding-left: 20px; padding-right: 20px;
+      background: rgba(0,0,0,0.5);
+    }
+    .hud-ava { font-size: 22px; }
+    .hud-n { font-size: 14px; font-weight: 700; }
+    .hud-score { font-size: 22px; font-weight: 900; color: var(--color); }
+    #ctrl-root { position: absolute; inset: 0; }
+
+    /* Feedback toast */
+    #toast {
+      position: fixed; top: calc(var(--safe-top) + 60px); left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(0,0,0,0.8); color: var(--color);
+      font-size: 18px; font-weight: 800;
+      padding: 10px 24px; border-radius: 30px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 9000; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* Countdown overlay */
-    #countdown-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 800;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 12px;
+    #cdo {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px; z-index: 9500;
     }
-    #countdown-overlay.active { display: flex; }
-    .countdown-number {
-      font-size: 120px;
-      font-weight: 900;
-      color: var(--player-color);
-      animation: countPop 0.4s ease;
-    }
-    @keyframes countPop {
-      0% { transform: scale(1.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .countdown-label { font-size: 20px; opacity: 0.5; letter-spacing: 3px; }
+    #cdo.on { display: flex; }
+    .cdn { font-size: 130px; font-weight: 900; color: var(--color); animation: pop 0.35s ease; }
+    @keyframes pop { 0% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .cdl { font-size: 18px; opacity: 0.4; letter-spacing: 4px; }
 
     /* Eliminated overlay */
-    #eliminated-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(180,0,0,0.7);
-      z-index: 900;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
+    #elimo {
+      display: none; position: fixed; inset: 0;
+      background: rgba(170,0,0,0.75);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 9400;
     }
-    #eliminated-overlay.active { display: flex; }
-    .eliminated-text { font-size: 48px; font-weight: 900; }
-    .eliminated-sub { font-size: 18px; opacity: 0.7; }
+    #elimo.on { display: flex; }
+    .elimo-icon { font-size: 80px; }
+    .elimo-t { font-size: 52px; font-weight: 900; }
+    .elimo-s { font-size: 17px; opacity: 0.65; }
+
+    /* ── Generic Joystick ── */
+    .jzone {
+      position: absolute;
+      width: 175px; height: 175px; border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .jknob {
+      width: 70px; height: 70px; border-radius: 50%;
+      background: var(--color); opacity: 0.82;
+      pointer-events: none;
+      transition: transform 0.04s;
+    }
+
+    /* ── Generic Action Button ── */
+    .abtn {
+      position: absolute;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 3px solid var(--color);
+      color: var(--color);
+      font-size: 22px; font-weight: 900;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .abtn.md { width: 90px; height: 90px; }
+    .abtn.lg { width: 120px; height: 120px; font-size: 28px; }
+    .abtn.p { background: var(--color); color: #000; transform: scale(0.91); }
   </style>
 </head>
 <body>
 
-  <!-- Connection status dot -->
-  <div id="conn-status"></div>
+<div id="dot"></div>
+<div id="frame"></div>
+<div id="toast"></div>
 
-  <!-- Player color frame -->
-  <div id="frame-border"></div>
+<!-- Countdown overlay -->
+<div id="cdo">
+  <div class="cdn" id="cdnum">3</div>
+  <div class="cdl">GET READY</div>
+</div>
 
-  <!-- Countdown overlay -->
-  <div id="countdown-overlay">
-    <div class="countdown-number" id="countdown-num">3</div>
-    <div class="countdown-label">GET READY</div>
+<!-- Eliminated overlay -->
+<div id="elimo">
+  <div class="elimo-icon">💀</div>
+  <div class="elimo-t">OUT!</div>
+  <div class="elimo-s">Watching from the couch...</div>
+</div>
+
+<!-- JOIN -->
+<div class="screen on" id="s-join">
+  <div class="logo">MOMENTS</div>
+  <div class="sub">Scan · Join · Play</div>
+  <input id="nick" type="text" placeholder="Your name..." maxlength="12"
+    autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" />
+  <button class="btn" id="btn-join">JOIN ROOM</button>
+</div>
+
+<!-- CHAR SELECT -->
+<div class="screen" id="s-chars">
+  <div class="char-top">
+    <div class="ava" id="ava">?</div>
+    <div class="char-name-tag" id="ctag">Player</div>
   </div>
-
-  <!-- Eliminated overlay -->
-  <div id="eliminated-overlay">
-    <div class="countdown-number">💀</div>
-    <div class="eliminated-text">OUT!</div>
-    <div class="eliminated-sub">Watching from the couch...</div>
+  <div class="carousel" id="carousel"></div>
+  <div class="char-bot">
+    <button class="btn" id="btn-lock">SELECT A HERO</button>
   </div>
+</div>
 
-  <!-- ── SCREEN: JOIN ── -->
-  <div class="screen active" id="screen-join">
-    <div class="logo">MOMENTS</div>
-    <div class="subtitle">The party starts on your phone</div>
-    <input
-      id="nickname-input"
-      type="text"
-      placeholder="Your name..."
-      maxlength="12"
-      autocomplete="off"
-      autocorrect="off"
-      spellcheck="false"
-    />
-    <button class="btn-primary" id="btn-join">JOIN ROOM</button>
+<!-- READY -->
+<div class="screen" id="s-ready">
+  <div class="big" id="r-emoji">🎮</div>
+  <div class="hero-n" id="r-name">Byte</div>
+  <div class="pulse-ring">✓</div>
+  <div style="font-size:15px;opacity:.45">Locked in!</div>
+  <div class="wait">Waiting for others…</div>
+</div>
+
+<!-- CONTROLLER -->
+<div class="screen" id="s-ctrl">
+  <div class="hud">
+    <div class="hud-ava" id="h-ava">🎮</div>
+    <div class="hud-n"    id="h-name">Player</div>
+    <div class="hud-score" id="h-score">0</div>
   </div>
+  <div id="ctrl-root"></div>
+</div>
 
-  <!-- ── SCREEN: CHARACTER SELECT ── -->
-  <div class="screen" id="screen-chars">
-    <div class="char-header">
-      <div class="avatar" id="player-avatar">?</div>
-      <div class="name-tag" id="player-name-display">Player</div>
-    </div>
+<script>
+(() => {
+'use strict';
 
-    <div class="char-carousel" id="char-carousel">
-      <!-- Cards injected by JS -->
-    </div>
+// ── Hero data ─────────────────────────────────────────────────────────────
+const HEROES = [
+  { id:'byte',    name:'Byte',    emoji:'🎮', desc:'Fastest button-masher in the galaxy', color:'#00BFFF' },
+  { id:'nova',    name:'Nova',    emoji:'🔭', desc:'Built her first gadget at age 5',     color:'#FFD700' },
+  { id:'orbit',   name:'Orbit',   emoji:'🚀', desc:'Lost in space, winning everywhere',   color:'#00FFE0' },
+  { id:'striker', name:'Striker', emoji:'⚽', desc:'Never met a goal he couldn\'t score', color:'#7FFF00' },
+  { id:'sizzle',  name:'Sizzle',  emoji:'🍳', desc:'Turns every arena into a cook-off',   color:'#FF6B00' },
+  { id:'shade',   name:'Shade',   emoji:'🥷', desc:'Appears from nowhere, wins from nowhere', color:'#C77DFF' },
+  { id:'dusty',   name:'Dusty',   emoji:'🤠', desc:'Rides in like the Wild West',          color:'#D2691E' },
+  { id:'pop',     name:'Pop',     emoji:'🛼', desc:'Always first to the party',             color:'#FF1493' },
+];
 
-    <div class="char-footer">
-      <button class="btn-primary" id="btn-lock">HOLD TO LOCK IN</button>
-    </div>
-  </div>
+// ── State ─────────────────────────────────────────────────────────────────
+let ws = null, pid = null, nick = '', reconnTok = null;
+let playerColor = '#00BFFF';
+let selHero = null, lockHero = null;
+let score = 0;
+let takenSet = new Set();
+let inputTick = null;
+let lockPressTimer = null;
 
-  <!-- ── SCREEN: READY ── -->
-  <div class="screen" id="screen-ready">
-    <div class="ready-hero-emoji" id="ready-hero-emoji">🎮</div>
-    <div class="ready-hero-name" id="ready-hero-name">Byte</div>
-    <div class="ready-pulse">✓</div>
-    <div class="ready-label">You're locked in!</div>
-    <div class="waiting-text">Waiting for others...</div>
-  </div>
+// Virtual joystick/button state — reset each frame
+const inp = {
+  moveX:0, moveY:0, aimX:0, aimY:0,
+  tiltX:0, tiltY:0,
+  actionPressed:false, action2Pressed:false,
+  touchX:0, touchY:0,
+};
 
-  <!-- ── SCREEN: CONTROLLER ── -->
-  <div class="screen" id="screen-controller">
-    <!-- HUD bar -->
-    <div class="controller-hud">
-      <div class="hud-avatar" id="ctrl-avatar">🎮</div>
-      <div class="hud-name" id="ctrl-name">Player</div>
-      <div class="hud-score" id="ctrl-score">0</div>
-    </div>
-    <!-- Dynamic layout rendered by JS per mini-game -->
-    <div id="controller-layout-root"></div>
-  </div>
+// ── DOM refs ──────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const screens = {
+  join:  $('s-join'),
+  chars: $('s-chars'),
+  ready: $('s-ready'),
+  ctrl:  $('s-ctrl'),
+};
 
-  <script>
-  (() => {
-    // ── Hero Roster ──
-    const HEROES = [
-      { id: 'byte',    name: 'Byte',    emoji: '🎮', desc: 'The fastest button-masher in the galaxy',  color: '#00BFFF' },
-      { id: 'nova',    name: 'Nova',    emoji: '🔭', desc: 'Built her first gadget at age 5',           color: '#FFD700' },
-      { id: 'orbit',   name: 'Orbit',   emoji: '🚀', desc: 'Lost in space, winning everywhere else',    color: '#00FFFF' },
-      { id: 'striker', name: 'Striker', emoji: '⚽', desc: 'Never met a goal he couldn\'t score',       color: '#7FFF00' },
-      { id: 'sizzle',  name: 'Sizzle',  emoji: '🍳', desc: 'Turns every arena into a cook-off',         color: '#FF6B00' },
-      { id: 'shade',   name: 'Shade',   emoji: '🥷', desc: 'Appears from nowhere, wins from nowhere',   color: '#9B59B6' },
-      { id: 'dusty',   name: 'Dusty',   emoji: '🤠', desc: 'Rides into every game like the Wild West',  color: '#D2691E' },
-      { id: 'pop',     name: 'Pop',     emoji: '🛼', desc: 'Always first to the party, first to win',   color: '#FF1493' },
-    ];
+const show = key => {
+  Object.values(screens).forEach(s => s.classList.remove('on'));
+  screens[key]?.classList.add('on');
+};
 
-    // ── State ──
-    let ws = null;
-    let playerId = null;
-    let playerColor = '#00BFFF';
-    let selectedHeroId = null;
-    let lockedHeroId = null;
-    let nickname = '';
-    let score = 0;
-    let takenHeroes = new Set();
-    let reconnectToken = null;
+// ── Color helpers ─────────────────────────────────────────────────────────
+const setColor = hex => {
+  playerColor = hex;
+  document.documentElement.style.setProperty('--color', hex);
+  $('ava').style.background = hex;
+};
 
-    // ── Joystick state ──
-    const sticks = {};
-    let sendInputInterval = null;
+// ── Toast ─────────────────────────────────────────────────────────────────
+let toastTimeout;
+const toast = msg => {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 2200);
+};
 
-    // ── URL parsing ──
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomToken = window.location.pathname.split('/').pop()
-                   || urlParams.get('room') || 'DEMO';
+// ── Haptic ────────────────────────────────────────────────────────────────
+const haptic = pat => {
+  if (!navigator.vibrate) return;
+  const map = {
+    dash:[30], hit:[80], fire:[20], pickup:[40,20,40],
+    shield_break:[60,20,60], strong_hit:[120],
+    eliminated:[100,50,200], win:[50,30,50,30,200],
+    game_start:[30,20,30,20,80], countdown:[30],
+  };
+  navigator.vibrate(map[pat] || [30]);
+};
 
-    // ── Vibration helper ──
-    const haptic = (pattern) => {
-      if (!navigator.vibrate) return;
-      const patterns = {
-        join:      [50],
-        ready:     [30, 30, 80],
-        hit:       [80],
-        dash:      [30],
-        fire:      [20],
-        pickup:    [40, 20, 40],
-        eliminate: [100, 50, 200],
-        win:       [50, 30, 50, 30, 200]
-      };
-      navigator.vibrate(patterns[pattern] || [50]);
-    };
+// ── WebSocket ─────────────────────────────────────────────────────────────
+const wsUrl = () => {
+  const host = window.location.hostname || '%%WS_HOST%%';
+  return `ws://${host}:8765/join`;
+};
 
-    // ── Color frame ──
-    const setColor = (color) => {
-      playerColor = color;
-      document.documentElement.style.setProperty('--player-color', color);
-    };
+const connect = () => {
+  ws = new WebSocket(wsUrl());
+  ws.onopen = () => {
+    $('dot').classList.add('ok');
+    const saved = localStorage.getItem('moments_token');
+    if (saved && pid) {
+      send({ type:'reconnect', token: saved });
+    } else {
+      send({ type:'join', nickname: nick, roomToken: '%%ROOM_TOKEN%%' });
+    }
+  };
+  ws.onclose  = () => { $('dot').classList.remove('ok'); setTimeout(connect, 3000); };
+  ws.onerror  = () => ws.close();
+  ws.onmessage = e => { try { route(JSON.parse(e.data)); } catch(_){} };
+};
 
-    // ── Screen navigation ──
-    const showScreen = (id) => {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    };
+const send = obj => {
+  if (ws?.readyState === WebSocket.OPEN)
+    ws.send(JSON.stringify(obj));
+};
 
-    // ── WebSocket ──
-    const connect = () => {
-      const wsHost = window.location.hostname;
-      const wsUrl = `ws://${wsHost}:8765/join`;
-      ws = new WebSocket(wsUrl);
+// ── Server message router ─────────────────────────────────────────────────
+const route = msg => {
+  switch (msg.type) {
+    // ── join_accepted (TV gateway) ──
+    case 'join_accepted':
+    case 'reconnect_accepted': {
+      pid = msg.playerId;
+      reconnTok = msg.reconnectToken;
+      localStorage.setItem('moments_token', reconnTok);
+      if (msg.playerColor) setColor(msg.playerColor);
+      $('ava').textContent = HEROES.find(h=>h.id===lockHero)?.emoji ?? '?';
+      $('ctag').textContent = nick;
+      buildCarousel();
+      show('chars');
+      haptic('dash');
+      break;
+    }
 
-      ws.onopen = () => {
-        document.getElementById('conn-status').classList.add('connected');
-        // Send join or reconnect
-        const token = localStorage.getItem('moments_reconnect_token');
-        if (token) {
-          ws.send(JSON.stringify({ type: 'reconnect', reconnectToken: token, nickname }));
-        } else {
-          ws.send(JSON.stringify({ type: 'join', nickname, roomToken }));
-        }
-      };
+    // ── lobby state from server broadcast ──
+    case 'player_joined':
+      takenSet = new Set(msg.takenHeroes || takenSet);
+      updateCards();
+      break;
 
-      ws.onclose = () => {
-        document.getElementById('conn-status').classList.remove('connected');
-        setTimeout(connect, 3000); // Auto-reconnect
-      };
+    case 'player_disconnected':
+      takenSet.delete(msg.playerId);
+      updateCards();
+      break;
 
-      ws.onerror = () => ws.close();
-
-      ws.onmessage = (e) => handleServerMessage(JSON.parse(e.data));
-    };
-
-    const send = (obj) => {
-      if (ws && ws.readyState === WebSocket.OPEN)
-        ws.send(JSON.stringify(obj));
-    };
-
-    // ── Server message handler ──
-    const handleServerMessage = (msg) => {
-      switch (msg.type) {
-        case 'welcome':
-          playerId = msg.playerId;
-          reconnectToken = msg.reconnectToken;
-          localStorage.setItem('moments_reconnect_token', reconnectToken);
-          setColor(msg.playerColor || '#00BFFF');
-          document.getElementById('player-avatar').textContent = msg.playerEmoji || '🎮';
-          document.getElementById('player-name-display').textContent = nickname;
-          renderCharacterSelect();
-          showScreen('screen-chars');
-          haptic('join');
+    // ── UI commands from ControllerGateway.SendUICommand ──
+    case 'ui_command': {
+      const { command, payload } = msg;
+      switch (command) {
+        case 'countdown':      showCountdown(parseInt(payload) || 3); break;
+        case 'show_feedback':  toast(payload); break;
+        case 'show_multiplier': toast(`×${payload}`); break;
+        case 'show_hp':        toast(`❤️`.repeat(parseInt(payload))); break;
+        case 'show_eliminated':
+          $('elimo').classList.add('on');
+          stopInput();
+          haptic('eliminated');
           break;
-
-        case 'stateUpdate':
-          takenHeroes = new Set(msg.takenHeroes || []);
-          score = msg.score || 0;
-          updateCharCardStates();
-          document.getElementById('ctrl-score').textContent = score;
-          if (msg.lobbyState === 'InGame') {
-            activateController(msg.layout || 'default');
-          }
-          break;
-
-        case 'countdown':
-          showCountdown(msg.seconds);
-          break;
-
-        case 'layout':
-          activateController(msg.layoutId);
-          break;
-
-        case 'haptic':
-          haptic(msg.pattern);
-          break;
-
-        case 'eliminated':
-          document.getElementById('eliminated-overlay').classList.add('active');
-          haptic('eliminate');
-          stopInputLoop();
-          break;
-
-        case 'podium':
-          showScreen('screen-ready');
-          document.getElementById('ready-hero-emoji').textContent = '🏆';
-          document.getElementById('ready-hero-name').textContent = `#${msg.placement}`;
-          document.querySelector('.ready-label').textContent = msg.message || 'Session over!';
-          document.querySelector('.waiting-text').textContent = 'Thanks for playing!';
+        case 'show_score':     $('h-score').textContent = payload; break;
+        case 'podium': {
+          const [place, pmsg] = payload.split('|');
+          show('ready');
+          $('r-emoji').textContent = +place===1?'🏆':+place===2?'🥈':'🥉';
+          $('r-name').textContent = `#${place}`;
+          document.querySelector('#s-ready .wait').textContent = pmsg || 'Thanks for playing!';
           haptic('win');
           break;
-
-        case 'error':
-          alert(msg.code === 'room_full' ? 'Room is full!' : 'Connection error.');
-          break;
+        }
+        case 'layout':         activateLayout(payload); break;
+        case 'show_game':      activateLayout(payload); break;
       }
-    };
+      break;
+    }
 
-    // ── Character select rendering ──
-    const renderCharacterSelect = () => {
-      const carousel = document.getElementById('char-carousel');
-      carousel.innerHTML = '';
-      HEROES.forEach(hero => {
-        const card = document.createElement('div');
-        card.className = 'char-card';
-        card.dataset.heroId = hero.id;
-        const taken = takenHeroes.has(hero.id);
-        if (taken) card.classList.add('taken');
-        card.innerHTML = `
-          <div class="char-emoji">${hero.emoji}</div>
-          <div class="char-name">${hero.name}</div>
-          <div class="char-desc">${hero.desc}</div>
-          ${taken ? '<div class="taken-badge">TAKEN</div>' : ''}
-        `;
-        card.addEventListener('click', () => selectHero(hero));
-        carousel.appendChild(card);
-      });
-    };
+    case 'haptic':
+      haptic(msg.pattern);
+      break;
 
-    const updateCharCardStates = () => {
-      document.querySelectorAll('.char-card').forEach(card => {
-        const id = card.dataset.heroId;
-        card.classList.toggle('taken', takenHeroes.has(id) && id !== selectedHeroId);
-        card.classList.toggle('selected', id === selectedHeroId);
-      });
-    };
-
-    const selectHero = (hero) => {
-      selectedHeroId = hero.id;
-      setColor(hero.color);
-      updateCharCardStates();
-      document.getElementById('btn-lock').classList.add('ready-to-lock');
-      send({ type: 'heroHover', heroId: hero.id });
-      haptic('dash');
-    };
-
-    // Lock-in: hold button
-    let lockTimer = null;
-    const btnLock = document.getElementById('btn-lock');
-    btnLock.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (!selectedHeroId) return;
-      lockTimer = setTimeout(() => {
-        lockedHeroId = selectedHeroId;
-        send({ type: 'heroLock', heroId: lockedHeroId });
-        send({ type: 'ready' });
-        showReadyScreen();
-        haptic('ready');
-      }, 600);
-    });
-    btnLock.addEventListener('touchend', () => clearTimeout(lockTimer));
-
-    const showReadyScreen = () => {
-      const hero = HEROES.find(h => h.id === lockedHeroId);
-      if (hero) {
-        document.getElementById('ready-hero-emoji').textContent = hero.emoji;
-        document.getElementById('ready-hero-name').textContent = hero.name;
+    case 'state_snapshot': {
+      score = msg.score || score;
+      $('h-score').textContent = score;
+      if (msg.sessionPhase === 'InGame' && !$('s-ctrl').classList.contains('on')) {
+        activateLayout(msg.activeMiniGame || 'default');
       }
-      showScreen('screen-ready');
-    };
+      break;
+    }
 
-    // ── Countdown ──
-    const showCountdown = (from) => {
-      const overlay = document.getElementById('countdown-overlay');
-      const num = document.getElementById('countdown-num');
-      overlay.classList.add('active');
-      let count = from;
-      const tick = () => {
-        if (count <= 0) { overlay.classList.remove('active'); return; }
-        num.textContent = count;
-        num.style.animation = 'none';
-        num.offsetHeight; // reflow
-        num.style.animation = '';
-        haptic('dash');
-        count--;
-        setTimeout(tick, 1000);
-      };
-      tick();
-    };
+    case 'join_rejected':
+      toast(msg.reason || 'Could not join!');
+      show('join');
+      break;
 
-    // ── Controller layouts ──
-    const activateController = (layoutId) => {
-      showScreen('screen-controller');
-      const hero = HEROES.find(h => h.id === lockedHeroId);
-      document.getElementById('ctrl-avatar').textContent = hero ? hero.emoji : '🎮';
-      document.getElementById('ctrl-name').textContent = nickname;
+    case 'pong': break;
+  }
+};
 
-      const root = document.getElementById('controller-layout-root');
-      root.innerHTML = '';
+// ── Join button ───────────────────────────────────────────────────────────
+$('btn-join').addEventListener('click', () => {
+  nick = $('nick').value.trim() || `P${~~(Math.random()*99)}`;
+  if (!nick) return;
+  connect();
+});
+$('nick').addEventListener('keydown', e => { if(e.key==='Enter') $('btn-join').click(); });
 
-      const layouts = {
-        'polar-push':    renderMoveAndDash,
-        'color-clash':   renderMoveOnly,
-        'tank-battle':   renderTankLayout,
-        'wave-rider':    renderWaveLayout,
-        'bumper-blitz':  renderMoveAndBump,
-        'blink-shot':    renderAimAndFire,
-        'gravity-grab':  renderSwipeAndGrab,
-        'default':       renderMoveAndDash,
-      };
+// ── Character carousel ────────────────────────────────────────────────────
+const buildCarousel = () => {
+  const c = $('carousel'); c.innerHTML = '';
+  HEROES.forEach(h => {
+    const d = document.createElement('div');
+    d.className = 'ccard';
+    d.dataset.id = h.id;
+    if (takenSet.has(h.id)) d.classList.add('taken');
+    d.innerHTML = `<em>${h.emoji}</em><strong>${h.name}</strong><span>${h.desc}</span>`;
+    d.addEventListener('click', () => selectHero(h));
+    c.appendChild(d);
+  });
+};
 
-      (layouts[layoutId] || layouts['default'])(root);
-      startInputLoop(layoutId);
-    };
+const updateCards = () => {
+  document.querySelectorAll('.ccard').forEach(card => {
+    const id = card.dataset.id;
+    card.classList.toggle('taken', takenSet.has(id) && id !== selHero);
+    card.classList.toggle('sel',   id === selHero);
+  });
+};
 
-    // ── Layout: Move + Dash ──
-    const renderMoveAndDash = (root) => {
-      root.innerHTML = `
-        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
-          <div class="joystick-knob" id="joy-move-knob"></div>
-        </div>
-        <div class="action-btn" id="btn-dash" style="right:50px;bottom:90px;">DASH</div>
-      `;
-      setupJoystick('joy-move', 'move');
-      setupButton('btn-dash', 'dash');
-    };
+const selectHero = h => {
+  selHero = h.id;
+  setColor(h.color);
+  $('ava').textContent = h.emoji;
+  updateCards();
+  $('btn-lock').classList.add('rdy');
+  $('btn-lock').textContent = 'HOLD TO LOCK IN';
+  send({ type:'heroHover', heroId: h.id });
+  haptic('dash');
+};
 
-    // ── Layout: Move Only ──
-    const renderMoveOnly = (root) => {
-      root.innerHTML = `
-        <div class="joystick-zone" id="joy-move" style="left:50%;bottom:80px;transform:translateX(-50%);">
-          <div class="joystick-knob" id="joy-move-knob"></div>
-        </div>
-      `;
-      setupJoystick('joy-move', 'move');
-    };
+// Hold to lock in
+const btnLock = $('btn-lock');
+const lockStart = e => {
+  e.preventDefault();
+  if (!selHero) return;
+  lockPressTimer = setTimeout(() => {
+    lockHero = selHero;
+    send({ type:'heroLock',  heroId: lockHero });
+    send({ type:'ready' });
+    showReadyScreen();
+    haptic('win');
+  }, 600);
+};
+const lockCancel = () => clearTimeout(lockPressTimer);
+btnLock.addEventListener('touchstart', lockStart, { passive: false });
+btnLock.addEventListener('touchend',   lockCancel);
+btnLock.addEventListener('touchcancel',lockCancel);
 
-    // ── Layout: Tank ──
-    const renderTankLayout = (root) => {
-      root.innerHTML = `
-        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
-          <div class="joystick-knob" id="joy-move-knob"></div>
-        </div>
-        <div class="joystick-zone" id="joy-aim" style="right:40px;bottom:60px;">
-          <div class="joystick-knob" id="joy-aim-knob"></div>
-        </div>
-        <div class="action-btn" id="btn-fire" style="right:50%;bottom:280px;transform:translateX(50%);">🔥</div>
-      `;
-      setupJoystick('joy-move', 'move');
-      setupJoystick('joy-aim', 'aim');
-      setupButton('btn-fire', 'fire');
-    };
+const showReadyScreen = () => {
+  const h = HEROES.find(x => x.id === lockHero);
+  if (h) { $('r-emoji').textContent = h.emoji; $('r-name').textContent = h.name; }
+  show('ready');
+};
 
-    // ── Layout: Wave Rider ──
-    const renderWaveLayout = (root) => {
-      root.innerHTML = `
-        <div style="position:absolute;bottom:120px;left:50%;transform:translateX(-50%);text-align:center;opacity:0.4;font-size:14px">TILT TO BALANCE</div>
-        <div class="action-btn" id="btn-duck" style="bottom:80px;left:50%;transform:translateX(-50%);">DUCK</div>
-      `;
-      setupButton('btn-duck', 'duck');
-      // Enable tilt
-      if (typeof DeviceOrientationEvent !== 'undefined') {
-        window.addEventListener('deviceorientation', (e) => {
-          sticks.tiltX = (e.gamma || 0) / 45;
-        });
-      }
-    };
+// ── Countdown ─────────────────────────────────────────────────────────────
+const showCountdown = from => {
+  const ov = $('cdo'), num = $('cdnum');
+  ov.classList.add('on');
+  let n = from;
+  const tick = () => {
+    if (n <= 0) { ov.classList.remove('on'); return; }
+    num.textContent = n;
+    num.style.animation = 'none'; num.offsetHeight; num.style.animation = '';
+    haptic('countdown');
+    n--; setTimeout(tick, 1000);
+  };
+  tick();
+};
 
-    // ── Layout: Bump ──
-    const renderMoveAndBump = (root) => {
-      root.innerHTML = `
-        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
-          <div class="joystick-knob" id="joy-move-knob"></div>
-        </div>
-        <div class="action-btn" id="btn-bump" style="right:50px;bottom:90px;">💥</div>
-      `;
-      setupJoystick('joy-move', 'move');
-      setupButton('btn-bump', 'bump');
-    };
+// ── Controller layout activation ──────────────────────────────────────────
+const activateLayout = layoutId => {
+  $('elimo').classList.remove('on');
+  $('h-ava').textContent  = HEROES.find(h=>h.id===lockHero)?.emoji ?? '🎮';
+  $('h-name').textContent = nick;
+  $('h-score').textContent = score;
+  show('ctrl');
 
-    // ── Layout: Aim + Fire ──
-    const renderAimAndFire = (root) => {
-      root.innerHTML = `
-        <div id="aim-pad" style="position:absolute;inset:60px 0 160px;background:rgba(255,255,255,0.02);border-radius:16px;"></div>
-        <div class="action-btn" id="btn-fire" style="bottom:70px;left:50%;transform:translateX(-50%);">⚡ FIRE</div>
-      `;
-      setupAimPad('aim-pad');
-      setupButton('btn-fire', 'fire');
-    };
+  stopInput();
+  const root = $('ctrl-root'); root.innerHTML = '';
 
-    // ── Layout: Swipe + Grab ──
-    const renderSwipeAndGrab = (root) => {
-      root.innerHTML = `
-        <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);text-align:center;opacity:0.4;font-size:14px">SWIPE LEFT / RIGHT</div>
-        <div class="action-btn" id="btn-grab" style="bottom:90px;left:50%;transform:translateX(-50%);width:120px;height:120px;">GRAB</div>
-      `;
-      setupSwipe(root);
-      setupButton('btn-grab', 'grab');
-    };
+  const map = {
+    'polar-push':   buildMoveAndDash,
+    'color-clash':  buildMoveAndBomb,
+    'tank-battle':  buildTankLayout,
+    'wave-rider':   buildWaveLayout,
+    'bumper-blitz': buildMoveAndBoost,
+    'blink-shot':   buildAimAndBlink,
+    'gravity-grab': buildGrabLayout,
+    'default':      buildMoveAndDash,
+  };
+  (map[layoutId] || map['default'])(root);
+  startInput();
+};
 
-    // ── Joystick setup ──
-    const setupJoystick = (zoneId, axis) => {
-      const zone = document.getElementById(zoneId);
-      const knob = zone.querySelector('.joystick-knob');
-      if (!zone || !knob) return;
+// ── Layout builders ───────────────────────────────────────────────────────
 
-      const maxR = 54;
-      let touch = null;
-      let cx = 0, cy = 0;
+/* Polar Push: left joystick + DASH button */
+const buildMoveAndDash = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:36px;bottom:80px;">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="abtn md" id="b1" style="right:52px;bottom:115px;">DASH</div>
+  `;
+  joystick('jl','jlk', 'move');
+  button('b1', 'action');
+};
 
-      sticks[axis + 'X'] = 0;
-      sticks[axis + 'Y'] = 0;
+/* Color Clash: joystick + BOMB button */
+const buildMoveAndBomb = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:36px;bottom:80px;">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="abtn lg" id="b1" style="right:40px;bottom:100px;">💣</div>
+  `;
+  joystick('jl','jlk', 'move');
+  button('b1', 'action');
+};
 
-      zone.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        touch = e.touches[0];
-        const r = zone.getBoundingClientRect();
-        cx = r.left + r.width / 2;
-        cy = r.top + r.height / 2;
-      }, { passive: false });
+/* Tank Battle: dual-stick + FIRE */
+const buildTankLayout = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:36px;bottom:80px;">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="jzone" id="jr" style="right:36px;bottom:80px;">
+      <div class="jknob" id="jrk"></div>
+    </div>
+    <div class="abtn md" id="b1" style="left:50%;bottom:285px;transform:translateX(-50%);">🔥</div>
+  `;
+  joystick('jl','jlk', 'move');
+  joystick('jr','jrk', 'aim');
+  button('b1', 'action');
+};
 
-      zone.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (!touch) return;
-        touch = e.touches[0];
-        let dx = touch.clientX - cx;
-        let dy = touch.clientY - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > maxR) { dx *= maxR / dist; dy *= maxR / dist; }
-        knob.style.transform = `translate(${dx}px, ${dy}px)`;
-        sticks[axis + 'X'] = dx / maxR;
-        sticks[axis + 'Y'] = -(dy / maxR); // invert Y for game coordinates
-      }, { passive: false });
-
-      const release = () => {
-        touch = null;
-        knob.style.transform = '';
-        sticks[axis + 'X'] = 0;
-        sticks[axis + 'Y'] = 0;
-      };
-
-      zone.addEventListener('touchend', release);
-      zone.addEventListener('touchcancel', release);
-    };
-
-    // ── Button setup ──
-    const setupButton = (btnId, action) => {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      sticks[action] = false;
-      btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        sticks[action] = true;
-        btn.classList.add('pressed');
-        haptic('dash');
-      }, { passive: false });
-      btn.addEventListener('touchend', () => {
-        sticks[action] = false;
-        btn.classList.remove('pressed');
-      });
-    };
-
-    // ── Aim pad ──
-    const setupAimPad = (padId) => {
-      const pad = document.getElementById(padId);
-      if (!pad) return;
-      sticks.aimX = 0;
-      sticks.aimY = 0;
-      const r = pad.getBoundingClientRect();
-      pad.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const t = e.touches[0];
-        sticks.aimX = (t.clientX - r.left) / r.width;
-        sticks.aimY = (t.clientY - r.top) / r.height;
-      }, { passive: false });
-    };
-
-    // ── Swipe detector ──
-    const setupSwipe = (root) => {
-      let startX = 0;
-      sticks.moveX = 0;
-      root.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-      root.addEventListener('touchmove', (e) => {
-        sticks.moveX = Math.sign(e.touches[0].clientX - startX);
-      }, { passive: true });
-      root.addEventListener('touchend', () => { sticks.moveX = 0; });
-    };
-
-    // ── Input send loop (60fps → throttled to 20fps) ──
-    const startInputLoop = (layoutId) => {
-      stopInputLoop();
-      sendInputInterval = setInterval(() => {
-        send({
-          type: 'input',
-          moveX:       sticks.moveX || 0,
-          moveY:       sticks.moveY || 0,
-          aimX:        sticks.aimX  || 0,
-          aimY:        sticks.aimY  || 0,
-          tiltX:       sticks.tiltX || 0,
-          dashPressed: !!sticks.dash,
-          firePressed: !!sticks.fire,
-          actionPressed: !!sticks.bump || !!sticks.grab,
-          duckPressed: !!sticks.duck,
-        });
-      }, 50); // 20fps polling
-    };
-
-    const stopInputLoop = () => {
-      if (sendInputInterval) { clearInterval(sendInputInterval); sendInputInterval = null; }
-    };
-
-    // ── Join button ──
-    document.getElementById('btn-join').addEventListener('click', () => {
-      nickname = document.getElementById('nickname-input').value.trim() || `Player${Math.floor(Math.random()*99)}`;
-      if (!nickname) return;
-      connect();
+/* Wave Rider: steer joystick + TRICK + tilt */
+const buildWaveLayout = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:50%;bottom:70px;transform:translateX(-50%);">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="abtn md" id="b1" style="right:42px;bottom:270px;">🤙</div>
+    <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);
+      font-size:13px;opacity:0.35;letter-spacing:2px;white-space:nowrap">TILT TO BALANCE</div>
+  `;
+  joystick('jl','jlk', 'move');
+  button('b1', 'action');
+  // Device tilt → tiltX
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    window.addEventListener('deviceorientation', e => {
+      inp.tiltX = Math.max(-1, Math.min(1, (e.gamma || 0) / 40));
+      inp.tiltY = Math.max(-1, Math.min(1, (e.beta  || 0) / 40));
     });
+  }
+};
 
-    document.getElementById('nickname-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('btn-join').click();
+/* Bumper Blitz: joystick + BOOST */
+const buildMoveAndBoost = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:36px;bottom:80px;">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="abtn lg" id="b1" style="right:40px;bottom:100px;">⚡</div>
+  `;
+  joystick('jl','jlk', 'move');
+  button('b1', 'action');
+};
+
+/* Blink Shot: tap-to-aim pad + FIRE button */
+const buildAimAndBlink = root => {
+  root.innerHTML = `
+    <div id="aim-pad" style="position:absolute;left:20px;right:20px;
+      top:70px;bottom:175px;
+      background:rgba(255,255,255,0.02);border-radius:20px;
+      border:1px solid rgba(255,255,255,0.06);">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+        opacity:0.2;font-size:13px;letter-spacing:2px;">TAP TO AIM</div>
+    </div>
+    <div class="abtn lg" id="b1" style="bottom:70px;left:50%;transform:translateX(-50%);">⚡ BLINK</div>
+    <div class="abtn md" id="b2" style="bottom:90px;right:42px;">🛡</div>
+  `;
+  aimPad('aim-pad');
+  button('b1', 'action');
+  button('b2', 'action2');
+};
+
+/* Gravity Grab: thrust joystick + GRAB/SLAM */
+const buildGrabLayout = root => {
+  root.innerHTML = `
+    <div class="jzone" id="jl" style="left:50%;bottom:80px;transform:translateX(-50%);">
+      <div class="jknob" id="jlk"></div>
+    </div>
+    <div class="abtn lg" id="b1" style="left:42px;bottom:260px;">GRAB</div>
+    <div class="abtn md" id="b2" style="right:42px;bottom:270px;">💥</div>
+    <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);
+      font-size:13px;opacity:0.35;letter-spacing:2px">ZERO-G ARENA</div>
+  `;
+  joystick('jl','jlk', 'move');
+  button('b1', 'action');
+  button('b2', 'action2');
+};
+
+// ── Joystick ──────────────────────────────────────────────────────────────
+const joystick = (zoneId, knobId, axis) => {
+  const zone = document.getElementById(zoneId);
+  const knob = document.getElementById(knobId);
+  if (!zone || !knob) return;
+  const MAX = 50;
+  let tid = null, cx = 0, cy = 0;
+
+  inp[axis + 'X'] = 0;
+  inp[axis + 'Y'] = 0;
+
+  zone.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const r = zone.getBoundingClientRect();
+    cx = r.left + r.width  / 2;
+    cy = r.top  + r.height / 2;
+    tid = e.changedTouches[0].identifier;
+  }, { passive: false });
+
+  zone.addEventListener('touchmove', e => {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+      if (t.identifier !== tid) continue;
+      let dx = t.clientX - cx, dy = t.clientY - cy;
+      const d = Math.hypot(dx, dy);
+      if (d > MAX) { dx *= MAX/d; dy *= MAX/d; }
+      knob.style.transform = `translate(${dx}px,${dy}px)`;
+      inp[axis + 'X'] =  dx / MAX;
+      inp[axis + 'Y'] = -dy / MAX;   // invert Y for Unity
+    }
+  }, { passive: false });
+
+  const up = () => {
+    knob.style.transform = '';
+    inp[axis + 'X'] = 0;
+    inp[axis + 'Y'] = 0;
+    tid = null;
+  };
+  zone.addEventListener('touchend',    up);
+  zone.addEventListener('touchcancel', up);
+};
+
+// ── Button ────────────────────────────────────────────────────────────────
+const button = (btnId, field) => {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  inp[field + 'Pressed'] = false;
+  btn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    inp[field + 'Pressed'] = true;
+    btn.classList.add('p');
+    haptic('dash');
+  }, { passive: false });
+  const up = () => { inp[field + 'Pressed'] = false; btn.classList.remove('p'); };
+  btn.addEventListener('touchend',    up);
+  btn.addEventListener('touchcancel', up);
+};
+
+// ── Aim pad ───────────────────────────────────────────────────────────────
+const aimPad = padId => {
+  const pad = document.getElementById(padId);
+  if (!pad) return;
+  pad.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const r = pad.getBoundingClientRect();
+    const t = e.touches[0];
+    inp.touchX = ((t.clientX - r.left) / r.width)  * 2 - 1;
+    inp.touchY = ((t.clientY - r.top)  / r.height) * 2 - 1;
+  }, { passive: false });
+  pad.addEventListener('touchend', () => { inp.touchX = 0; inp.touchY = 0; });
+};
+
+// ── Input loop ────────────────────────────────────────────────────────────
+// Sends at 20fps (50ms). One-shot action flags reset after send.
+const startInput = () => {
+  stopInput();
+  inputTick = setInterval(() => {
+    send({
+      type:           'input',
+      moveX:          parseFloat(inp.moveX.toFixed(3)),
+      moveY:          parseFloat(inp.moveY.toFixed(3)),
+      aimX:           parseFloat(inp.aimX.toFixed(3)),
+      aimY:           parseFloat(inp.aimY.toFixed(3)),
+      touchX:         parseFloat(inp.touchX.toFixed(3)),
+      touchY:         parseFloat(inp.touchY.toFixed(3)),
+      tiltX:          parseFloat(inp.tiltX.toFixed(3)),
+      tiltY:          parseFloat(inp.tiltY.toFixed(3)),
+      actionPressed:  !!inp.actionPressed,
+      action2Pressed: !!inp.action2Pressed,
     });
+    // Reset one-shot buttons after send
+    inp.actionPressed  = false;
+    inp.action2Pressed = false;
+  }, 50);
+};
 
-  })();
-  </script>
+const stopInput = () => { clearInterval(inputTick); inputTick = null; };
+
+// ── Preload ───────────────────────────────────────────────────────────────
+// Request device orientation permission on iOS 13+
+document.addEventListener('touchstart', async () => {
+  if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+    try { await DeviceOrientationEvent.requestPermission(); } catch(_) {}
+  }
+}, { once: true });
+
+})();
+</script>
 </body>
 </html>

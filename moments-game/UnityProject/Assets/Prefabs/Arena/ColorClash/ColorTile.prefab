@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+# ══════════════════════════════════════════════════════════
+# ColorTile Prefab — reusable 2×2 paint tile for Color Clash.
+#
+# Components:
+#   - MeshFilter:    1m plane (subdivided for TilePaint.shader)
+#   - MeshRenderer:  TilePaint.shader material
+#   - BoxCollider:   2×0.2×2 (walkable, non-trigger)
+#   - ColorTile:     MonoBehaviour — MPB color animation + FreezeColor()
+#
+# ColorClashGame.Setup() spawns an 8×8 grid of these at Y=0,
+# spaced tileSize(2m) apart, centered on origin.
+# ══════════════════════════════════════════════════════════
+--- !u!1 &1
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4}
+  - component: {fileID: 33}
+  - component: {fileID: 23}
+  - component: {fileID: 65}
+  - component: {fileID: 114}
+  m_Layer: 0
+  m_Name: ColorTile
+  m_TagString: ColorTile
+  m_IsActive: 1
+--- !u!4 &4
+Transform:
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 2, y: 0.18, z: 2}
+  m_Father: {fileID: 0}
+--- !u!33 &33
+MeshFilter:
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &23
+MeshRenderer:
+  m_Materials:
+  - {fileID: 11400000, guid: color-tile-default-mat-guid, type: 2}
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+--- !u!65 &65
+BoxCollider:
+  m_BoxSize: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+  m_IsTrigger: 0
+--- !u!114 &114
+MonoBehaviour:
+  m_Script: {fileID: 11500000, guid: color-tile-script-guid, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  transitionSpeed: 10

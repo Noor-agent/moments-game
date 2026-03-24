@@ -72,14 +72,7 @@ public class ControllerGateway : MonoBehaviour
     private void OnClientConnected(string clientId)
     {
         Debug.Log($"[Gateway] Client connected: {clientId}");
-        // Send server hello with room info
-        var hello = new ServerHelloMsg
-        {
-            type    = "server_hello",
-            version = "1.0",
-            roomToken = sessionManager?.CurrentRoomToken ?? "------"
-        };
-        wsServer.Send(clientId, JsonUtility.ToJson(hello));
+        // send nothing here — wait for 'join' message
     }
 
     private void OnClientDisconnected(string clientId)
@@ -162,7 +155,7 @@ public class ControllerGateway : MonoBehaviour
 
         var response = new JoinResponseMsg
         {
-            type           = "join_accepted",
+            type           = "join_accepted",   // matches phone case 'join_accepted'
             playerId       = player.playerId,
             slot           = player.slot,
             reconnectToken = token,
@@ -293,6 +286,26 @@ public class ControllerGateway : MonoBehaviour
 
     public void SetActiveGame(MiniGameBase game) => _activeGame = game;
     public void ClearActiveGame() => _activeGame = null;
+
+    // ── Aliases & Additional Sends ─────────────────────────────────────────
+
+    /// <summary>Alias for SendHaptic — used by PodiumSceneController.</summary>
+    public void SendHapticToPlayer(string playerId, string pattern)
+        => SendHaptic(playerId, pattern);
+
+    /// <summary>Send raw JSON string to a specific player's phone.</summary>
+    public void SendToPlayer(string playerId, string json)
+    {
+        if (!_playerToClient.TryGetValue(playerId, out var clientId)) return;
+        wsServer?.Send(clientId, json);
+    }
+
+    /// <summary>Broadcast a countdown tick to all phones (shows number on screen).</summary>
+    public void BroadcastCountdown(int count)
+    {
+        var msg = new UICommandMsg { type = "ui_command", command = "countdown", payload = count.ToString() };
+        wsServer?.Broadcast(JsonUtility.ToJson(msg));
+    }
 
     // ── Utilities ──────────────────────────────────────────────────────────
 

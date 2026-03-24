@@ -253,10 +253,11 @@ public class TankBattleGame : MiniGameBase
                 EliminatePlayer(targetPlayerId);
                 AddScore(shooterPlayerId, 500);
 
-                // Check if only 1 tank left
+                // Count tanks still in activePlayers with a live object
                 int alive = 0;
                 foreach (var kv in _tanks)
-                    if (kv.Value.tankObject != null && !activePlayers.TrueForAll(p => p.playerId != kv.Key))
+                    if (kv.Value.tankObject != null &&
+                        activePlayers.Exists(p => p.playerId == kv.Key))
                         alive++;
                 if (alive <= 1) EndGame();
             }

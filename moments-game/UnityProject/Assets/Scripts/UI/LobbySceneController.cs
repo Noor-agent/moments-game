@@ -114,18 +114,18 @@ public class LobbySceneController : MonoBehaviour
 
     private IEnumerator CountdownToStart()
     {
-        // Pre-warm the first mini-game
+        // Pre-warm the first mini-game (placeholder — hook to game selector when ready)
         // MiniGameLoader.Instance?.PreWarmMiniGame(firstGame);
 
         for (int i = 3; i >= 1; i--)
         {
-            // Broadcast countdown to all phones
             ControllerGateway.Instance?.BroadcastCountdown(i);
+            AudioManager.Instance?.OnCountdown();
             yield return new WaitForSeconds(1f);
         }
 
         _session.ChangeState(SessionStateManager.LobbyState.InGame);
-        // MiniGameLoader.Instance?.StartCoroutine(MiniGameLoader.Instance.ActivateMiniGame(...));
+        // MiniGameLoader handles scene transition via SessionStateManager.OnStateChanged
     }
 
     private void OnHostStartPressed()

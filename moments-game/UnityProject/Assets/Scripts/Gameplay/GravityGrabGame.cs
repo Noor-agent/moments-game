@@ -71,8 +71,16 @@ public class GravityGrabGame : MiniGameBase
         public float      grabCooldownT;
         public bool       isEliminated;
 
-        // Score helper
-        public int OrbScore => heldOrbs.Count > 0 ? heldOrbs.ConvertAll(o => (int)o.tier).Sum() : 0;
+        // Score: 10pts per orb-value-point
+        public int OrbScore
+        {
+            get
+            {
+                int s = 0;
+                foreach (var o in heldOrbs) s += (int)o.tier;
+                return s;
+            }
+        }
     }
 
     private readonly Dictionary<string, GravState> _players2 = new();
@@ -375,15 +383,9 @@ public class GravityGrabGame : MiniGameBase
         var rng = Random.insideUnitCircle * (arenaRadius * 0.8f);
         return new Vector3(rng.x, 0, rng.y);
     }
-}
 
-// Extension helper (List<int>.Sum not available without LINQ in some Unity setups)
-internal static class IntListExtension
-{
-    public static int Sum(this List<int> list)
+    private static int SumOrbValues(List<int> list)
     {
-        int s = 0;
-        foreach (var v in list) s += v;
-        return s;
+        int s = 0; foreach (var v in list) s += v; return s;
     }
 }

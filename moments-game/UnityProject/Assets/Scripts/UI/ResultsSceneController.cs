@@ -85,14 +85,13 @@ public class ResultsSceneController : MonoBehaviour
             yield return null;
         }
 
-        // Check if session is over (e.g., 5 rounds played) or advance to next game
         var aggregator = ResultsAggregator.Instance;
         bool sessionOver = aggregator != null && aggregator.TotalRoundsPlayed >= 5;
 
         if (sessionOver)
-            await MiniGameLoader.Instance?.LoadPodium();
+            MiniGameLoader.Instance?.LoadPodium();
         else
-            await MiniGameLoader.Instance?.LoadLobby(); // Back to lobby for next vote
+            MiniGameLoader.Instance?.LoadLobby();
     }
 }
 
