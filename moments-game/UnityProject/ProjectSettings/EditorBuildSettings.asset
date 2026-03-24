@@ -5,41 +5,39 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  # ── Core scenes (always loaded via Bootstrap) ────────────────────────
   - enabled: 1
     path: Assets/Scenes/Bootstrap.unity
-    guid: 00000000000000000000000000000001
+    guid: 22dd9f95ec3bbb709faf30c1cda1ab7f
   - enabled: 1
     path: Assets/Scenes/Attract.unity
-    guid: 00000000000000000000000000000005
+    guid: ce3439005277982f8ad4828491c860ee
   - enabled: 1
     path: Assets/Scenes/Lobby.unity
-    guid: 00000000000000000000000000000002
+    guid: c433627ac3296f17d5092e022ebb79a6
   - enabled: 1
     path: Assets/Scenes/Results.unity
-    guid: 00000000000000000000000000000003
+    guid: 4663ba8517c2d10774c5ccc2f377613a
   - enabled: 1
     path: Assets/Scenes/Podium.unity
-    guid: 00000000000000000000000000000004
-  # ── Mini-game scenes (loaded via Addressables at runtime) ────────────
+    guid: cec4ea025d963159e23695d5b858a7db
   - enabled: 1
     path: Assets/Scenes/MiniGames/PolarPush.unity
-    guid: 00000000000000000000000000000010
+    guid: f7590affcdd2798d1d977e72a0ef0fb9
   - enabled: 1
     path: Assets/Scenes/MiniGames/ColorClash.unity
-    guid: 00000000000000000000000000000020
+    guid: 6474e8611504a064a04b0a23859f48f3
   - enabled: 1
     path: Assets/Scenes/MiniGames/TankBattle.unity
-    guid: 00000000000000000000000000000030
+    guid: 65ba0a251b672f668e5f7ff194c6b5fb
   - enabled: 1
     path: Assets/Scenes/MiniGames/WaveRider.unity
-    guid: 00000000000000000000000000000040
+    guid: 4e5414652763618628f809f4e5ca03ca
   - enabled: 1
     path: Assets/Scenes/MiniGames/BumperBlitz.unity
-    guid: 00000000000000000000000000000050
+    guid: 525f6a7033987efe2da0b1c790c5c7a0
   - enabled: 1
     path: Assets/Scenes/MiniGames/BlinkShot.unity
-    guid: 00000000000000000000000000000060
+    guid: 85dbc83792b7e066e15a9765430e2a04
   - enabled: 1
     path: Assets/Scenes/MiniGames/GravityGrab.unity
-    guid: 00000000000000000000000000000070
+    guid: 0a6ffc528199850bdcca781934f3ed0c
