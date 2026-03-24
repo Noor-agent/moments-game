@@ -1,22 +1,39 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 /// <summary>
-/// WebSocket gateway between TV host and phone controllers.
-/// Normalizes all incoming input events and dispatches them to the active mini-game.
-/// Data-driven: controller layout is defined per MiniGameDefinition ScriptableObject.
+/// ControllerGateway — bridges MomentsWebSocketServer messages to game systems.
+/// 
+/// Responsibilities:
+///   - Maps WebSocket clientIds → PlayerData (via session token)
+///   - Parses incoming JSON input packets
+///   - Routes inputs to the active mini-game
+///   - Sends state snapshots, haptics, and UI commands back to phones
+///
+/// TV-authoritative: phones send INTENT only. No game state on client side.
 /// </summary>
 public class ControllerGateway : MonoBehaviour
 {
     public static ControllerGateway Instance { get; private set; }
 
-    [Header("Server Config")]
-    [SerializeField] private int wsPort = 8765;
-    [SerializeField] private float pingIntervalSeconds = 2f;
+    [Header("References")]
+    [SerializeField] private MomentsWebSocketServer wsServer;
+    [SerializeField] private SessionStateManager sessionManager;
 
-    private WebSocketServer _server;
-    private readonly Dictionary<string, string> _connectionToPlayer = new();
-    public event System.Action<string, InputMessage> OnInputReceived;
+    // clientId → playerId mapping
+    private readonly Dictionary<string, string> _clientToPlayer = new();
+    private readonly Dictionary<string, string> _playerToClient = new();
+    // reconnect token → playerId
+    private readonly Dictionary<string, string> _reconnectTokens = new();
+
+    // Active mini-game receives inputs
+    private MiniGameBase _activeGame;
+
+    public event Action<string, InputMessage> OnInputReceived;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────
 
     private void Awake()
     {
@@ -27,148 +44,279 @@ public class ControllerGateway : MonoBehaviour
 
     private void Start()
     {
-        StartServer();
-    }
-
-    private void StartServer()
-    {
-        // WebSocketSharp server — swap for Unity Netcode WebSocket transport if preferred
-        Debug.Log($"[Gateway] WebSocket server listening on ws://0.0.0.0:{wsPort}");
-        // _server = new WebSocketServer($"ws://0.0.0.0:{wsPort}");
-        // _server.AddWebSocketService<MomentsWebSocketBehavior>("/join", () => new MomentsWebSocketBehavior(this));
-        // _server.Start();
-    }
-
-    /// <summary>
-    /// Called by WebSocket behavior when a message arrives from a phone client.
-    /// </summary>
-    public void HandleIncomingMessage(string connectionId, string rawJson)
-    {
-        var msg = JsonUtility.FromJson<InputMessage>(rawJson);
-        if (msg == null) return;
-
-        var player = ResolvePlayer(connectionId, msg);
-        if (player == null) return;
-
-        msg.playerId = player.playerId;
-        OnInputReceived?.Invoke(player.playerId, msg);
-
-        // Route to session state for non-gameplay events
-        switch (msg.type)
+        if (wsServer == null) wsServer = MomentsWebSocketServer.Instance;
+        if (wsServer != null)
         {
-            case "join":
-                HandleJoin(connectionId, msg);
-                break;
-            case "heroHover":
-                SessionStateManager.Instance.SetPlayerHero(player.playerId, msg.heroId);
-                BroadcastState();
-                break;
-            case "heroLock":
-                SessionStateManager.Instance.SetPlayerHero(player.playerId, msg.heroId);
-                BroadcastState();
-                break;
-            case "ready":
-                SessionStateManager.Instance.SetPlayerReady(player.playerId, true);
-                BroadcastState();
-                break;
-            case "reconnect":
-                HandleReconnect(connectionId, msg);
-                break;
+            wsServer.OnMessageReceived  += OnRawMessage;
+            wsServer.OnClientConnected  += OnClientConnected;
+            wsServer.OnClientDisconnected += OnClientDisconnected;
         }
-    }
-
-    private void HandleJoin(string connectionId, InputMessage msg)
-    {
-        var player = SessionStateManager.Instance.AddPlayer(connectionId, msg.nickname);
-        if (player == null) { SendToConnection(connectionId, "{\"type\":\"error\",\"code\":\"room_full\"}"); return; }
-        _connectionToPlayer[connectionId] = player.playerId;
-        BroadcastState();
-        SendHaptic(player.playerId, "join");
-    }
-
-    private void HandleReconnect(string connectionId, InputMessage msg)
-    {
-        var player = SessionStateManager.Instance.GetPlayerByReconnectToken(msg.reconnectToken);
-        if (player == null) { HandleJoin(connectionId, msg); return; }
-        player.isConnected = true;
-        _connectionToPlayer[connectionId] = player.playerId;
-        BroadcastState();
-    }
-
-    private PlayerData ResolvePlayer(string connectionId, InputMessage msg)
-    {
-        if (_connectionToPlayer.TryGetValue(connectionId, out var pid))
-            return SessionStateManager.Instance.GetPlayer(pid);
-        return null;
-    }
-
-    public void BroadcastState()
-    {
-        // Serialize session state snapshot and broadcast to all connected phones
-        var snapshot = BuildStateSnapshot();
-        // _server.WebSocketServices.Broadcast(snapshot);
-        Debug.Log($"[Gateway] Broadcast state: {snapshot}");
-    }
-
-    public void SendHaptic(string playerId, string pattern)
-    {
-        // Send haptic command to specific player's phone
-        var msg = $"{{\"type\":\"haptic\",\"pattern\":\"{pattern}\"}}";
-        SendToPlayer(playerId, msg);
-    }
-
-    public void SendControllerLayout(string playerId, string layoutId)
-    {
-        var msg = $"{{\"type\":\"layout\",\"layoutId\":\"{layoutId}\"}}";
-        SendToPlayer(playerId, msg);
-    }
-
-    private void SendToPlayer(string playerId, string json)
-    {
-        foreach (var kv in _connectionToPlayer)
-            if (kv.Value == playerId) { SendToConnection(kv.Key, json); break; }
-    }
-
-    private void SendToConnection(string connectionId, string json)
-    {
-        // _server.WebSocketServices["/join"].Sessions.SendTo(json, connectionId);
-        Debug.Log($"[Gateway] → {connectionId}: {json}");
-    }
-
-    private string BuildStateSnapshot()
-    {
-        // Build minimal JSON state for all phone clients
-        return JsonUtility.ToJson(new
+        else
         {
-            type = "stateUpdate",
-            lobbyState = SessionStateManager.Instance.CurrentState.ToString(),
-            players = SessionStateManager.Instance.Players
-        });
+            Debug.LogError("[Gateway] MomentsWebSocketServer not found!");
+        }
     }
 
     private void OnDestroy()
     {
-        // _server?.Stop();
+        if (wsServer != null)
+        {
+            wsServer.OnMessageReceived  -= OnRawMessage;
+            wsServer.OnClientConnected  -= OnClientConnected;
+            wsServer.OnClientDisconnected -= OnClientDisconnected;
+        }
     }
-}
 
-[System.Serializable]
-public class InputMessage
-{
-    public string type;         // "join" | "heroHover" | "heroLock" | "ready" | "input" | "reconnect"
-    public string playerId;     // Filled in by gateway after auth
-    public string nickname;
-    public string heroId;
-    public string reconnectToken;
-    
-    // Gameplay input fields (used during active mini-game)
-    public float moveX;         // Left joystick X
-    public float moveY;         // Left joystick Y
-    public float aimX;          // Right joystick / aim pad X
-    public float aimY;          // Right joystick / aim pad Y
-    public bool dashPressed;
-    public bool firePressed;
-    public bool actionPressed;
-    public bool duckPressed;
-    public float tiltX;         // Device tilt for Wave Rider
+    // ── Message Routing ────────────────────────────────────────────────────
+
+    private void OnClientConnected(string clientId)
+    {
+        Debug.Log($"[Gateway] Client connected: {clientId}");
+        // Send server hello with room info
+        var hello = new ServerHelloMsg
+        {
+            type    = "server_hello",
+            version = "1.0",
+            roomToken = sessionManager?.CurrentRoomToken ?? "------"
+        };
+        wsServer.Send(clientId, JsonUtility.ToJson(hello));
+    }
+
+    private void OnClientDisconnected(string clientId)
+    {
+        if (_clientToPlayer.TryGetValue(clientId, out var playerId))
+        {
+            Debug.Log($"[Gateway] Player {playerId} disconnected (client {clientId})");
+            _playerToClient.Remove(playerId);
+            _clientToPlayer.Remove(clientId);
+            sessionManager?.OnPlayerDisconnected(playerId);
+
+            // Broadcast to remaining clients
+            var msg = new PlayerEventMsg { type = "player_disconnected", playerId = playerId };
+            wsServer.Broadcast(JsonUtility.ToJson(msg));
+        }
+    }
+
+    private void OnRawMessage(string clientId, string json)
+    {
+        try
+        {
+            // Peek at the type field first
+            var peek = JsonUtility.FromJson<TypePeek>(json);
+            if (peek == null) return;
+
+            switch (peek.type)
+            {
+                case "join":
+                    HandleJoin(clientId, json);
+                    break;
+                case "reconnect":
+                    HandleReconnect(clientId, json);
+                    break;
+                case "input":
+                    HandleInput(clientId, json);
+                    break;
+                case "ping":
+                    wsServer.Send(clientId, "{\"type\":\"pong\"}");
+                    break;
+                default:
+                    Debug.LogWarning($"[Gateway] Unknown message type: {peek.type}");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[Gateway] Message parse error from {clientId}: {ex.Message}\nJSON: {json}");
+        }
+    }
+
+    // ── Join / Reconnect ───────────────────────────────────────────────────
+
+    private void HandleJoin(string clientId, string json)
+    {
+        var msg = JsonUtility.FromJson<JoinMsg>(json);
+        if (msg == null) return;
+
+        // Check if session has room
+        if (sessionManager == null || !sessionManager.CanJoin)
+        {
+            var reject = new JoinResponseMsg { type = "join_rejected", reason = "Session full or game in progress" };
+            wsServer.Send(clientId, JsonUtility.ToJson(reject));
+            return;
+        }
+
+        // Register player
+        var player = sessionManager.RegisterPlayer(msg.nickname, msg.heroId, msg.slot);
+        if (player == null)
+        {
+            var reject = new JoinResponseMsg { type = "join_rejected", reason = "Slot taken" };
+            wsServer.Send(clientId, JsonUtility.ToJson(reject));
+            return;
+        }
+
+        // Generate reconnect token
+        string token = GenerateToken();
+        _reconnectTokens[token] = player.playerId;
+        _clientToPlayer[clientId] = player.playerId;
+        _playerToClient[player.playerId] = clientId;
+
+        var response = new JoinResponseMsg
+        {
+            type           = "join_accepted",
+            playerId       = player.playerId,
+            slot           = player.slot,
+            reconnectToken = token,
+            playerColor    = ColorToHex(player.playerColor)
+        };
+        wsServer.Send(clientId, JsonUtility.ToJson(response));
+
+        // Broadcast new player to all others
+        var announcement = new PlayerEventMsg
+        {
+            type     = "player_joined",
+            playerId = player.playerId,
+            nickname = player.nickname,
+            heroId   = player.heroId,
+            slot     = player.slot
+        };
+        wsServer.Broadcast(JsonUtility.ToJson(announcement));
+
+        Debug.Log($"[Gateway] Player joined: {player.nickname} (slot {player.slot}) ← {clientId}");
+    }
+
+    private void HandleReconnect(string clientId, string json)
+    {
+        var msg = JsonUtility.FromJson<ReconnectMsg>(json);
+        if (msg == null) return;
+
+        if (!_reconnectTokens.TryGetValue(msg.token, out var playerId))
+        {
+            wsServer.Send(clientId, "{\"type\":\"reconnect_rejected\",\"reason\":\"Invalid token\"}");
+            return;
+        }
+
+        var player = sessionManager?.GetPlayer(playerId);
+        if (player == null)
+        {
+            wsServer.Send(clientId, "{\"type\":\"reconnect_rejected\",\"reason\":\"Player not found\"}");
+            return;
+        }
+
+        // Update mapping
+        if (_playerToClient.TryGetValue(playerId, out var oldClient))
+            _clientToPlayer.Remove(oldClient);
+
+        _clientToPlayer[clientId] = playerId;
+        _playerToClient[playerId] = clientId;
+
+        var response = new JoinResponseMsg
+        {
+            type           = "reconnect_accepted",
+            playerId       = player.playerId,
+            slot           = player.slot,
+            reconnectToken = msg.token,
+            playerColor    = ColorToHex(player.playerColor)
+        };
+        wsServer.Send(clientId, JsonUtility.ToJson(response));
+        Debug.Log($"[Gateway] Player reconnected: {player.nickname} ← {clientId}");
+
+        // Send current game state
+        SendStateSnapshot(clientId);
+    }
+
+    private void HandleInput(string clientId, string json)
+    {
+        if (!_clientToPlayer.TryGetValue(clientId, out var playerId)) return;
+
+        var input = JsonUtility.FromJson<InputMessage>(json);
+        if (input == null) return;
+        input.playerId = playerId;
+
+        // Route to active game
+        _activeGame?.ReceiveInput(playerId, input);
+        OnInputReceived?.Invoke(playerId, input);
+    }
+
+    // ── Outgoing Commands ──────────────────────────────────────────────────
+
+    /// <summary>Send haptic feedback to a specific player's phone.</summary>
+    public void SendHaptic(string playerId, string pattern)
+    {
+        if (!_playerToClient.TryGetValue(playerId, out var clientId)) return;
+        var msg = new HapticMsg { type = "haptic", pattern = pattern };
+        wsServer?.Send(clientId, JsonUtility.ToJson(msg));
+    }
+
+    /// <summary>Send haptic to all connected phones.</summary>
+    public void BroadcastHaptic(string pattern)
+    {
+        var msg = new HapticMsg { type = "haptic", pattern = pattern };
+        wsServer?.Broadcast(JsonUtility.ToJson(msg));
+    }
+
+    /// <summary>Send a UI command to a phone (e.g., show countdown, game name, score).</summary>
+    public void SendUICommand(string playerId, string command, string payload = "")
+    {
+        if (!_playerToClient.TryGetValue(playerId, out var clientId)) return;
+        var msg = new UICommandMsg { type = "ui_command", command = command, payload = payload };
+        wsServer?.Send(clientId, JsonUtility.ToJson(msg));
+    }
+
+    /// <summary>Broadcast current game state snapshot to all phones.</summary>
+    public void BroadcastStateSnapshot()
+    {
+        if (sessionManager == null) return;
+        var snapshot = BuildStateSnapshot();
+        wsServer?.Broadcast(snapshot);
+    }
+
+    private void SendStateSnapshot(string clientId)
+    {
+        var snapshot = BuildStateSnapshot();
+        wsServer?.Send(clientId, snapshot);
+    }
+
+    private string BuildStateSnapshot()
+    {
+        var snap = new StateSnapshotMsg
+        {
+            type          = "state_snapshot",
+            sessionPhase  = sessionManager?.CurrentPhase.ToString() ?? "Unknown",
+            activeMiniGame = sessionManager?.ActiveMiniGameId ?? "",
+            playerCount   = sessionManager?.PlayerCount ?? 0,
+            roundNumber   = sessionManager?.RoundNumber ?? 0
+        };
+        return JsonUtility.ToJson(snap);
+    }
+
+    // ── Mini-game Registration ─────────────────────────────────────────────
+
+    public void SetActiveGame(MiniGameBase game) => _activeGame = game;
+    public void ClearActiveGame() => _activeGame = null;
+
+    // ── Utilities ──────────────────────────────────────────────────────────
+
+    private string GenerateToken()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        var token = new System.Text.StringBuilder(6);
+        var rng = new System.Random();
+        for (int i = 0; i < 6; i++) token.Append(chars[rng.Next(chars.Length)]);
+        return token.ToString();
+    }
+
+    private string ColorToHex(Color c)
+        => $"#{(int)(c.r * 255):X2}{(int)(c.g * 255):X2}{(int)(c.b * 255):X2}";
+
+    // ── Message Types (Unity JsonUtility-serializable) ─────────────────────
+
+    [Serializable] private class TypePeek          { public string type; }
+    [Serializable] private class JoinMsg           { public string type; public string nickname; public string heroId; public int slot; }
+    [Serializable] private class ReconnectMsg      { public string type; public string token; }
+    [Serializable] private class ServerHelloMsg    { public string type; public string version; public string roomToken; }
+    [Serializable] private class JoinResponseMsg   { public string type; public string playerId; public int slot; public string reconnectToken; public string playerColor; public string reason; }
+    [Serializable] private class PlayerEventMsg    { public string type; public string playerId; public string nickname; public string heroId; public int slot; }
+    [Serializable] private class HapticMsg         { public string type; public string pattern; }
+    [Serializable] private class UICommandMsg      { public string type; public string command; public string payload; }
+    [Serializable] private class StateSnapshotMsg  { public string type; public string sessionPhase; public string activeMiniGame; public int playerCount; public int roundNumber; }
 }

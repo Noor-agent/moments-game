@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: mini-game-definition-guid, type: 3}
+  m_Name: MiniGameDef_wave_rider
+  gameId: wave-rider
+  displayName: Wave Rider
+  rulesLine: Stay on your surfboard the longest!
+  durationSeconds: 90
+  minPlayers: 2
+  maxPlayers: 8
+  scoringMode: TimeSurvived
+  controllerLayout: TiltAndDuck
+  sceneAddress: Scenes/WaveRider
+  hasElimination: 1

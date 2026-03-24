@@ -1,0 +1,261 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4}
+  - component: {fileID: 54}
+  - component: {fileID: 136}
+  - component: {fileID: 137}
+  - component: {fileID: 114}
+  - component: {fileID: 115}
+  m_Layer: 0
+  m_Name: Hero_Shade
+  m_TagString: Player
+  m_IsActive: 1
+
+# ── Root Transform ──────────────────────────────
+--- !u!4 &4
+Transform:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1000}
+  - {fileID: 2000}
+  - {fileID: 3000}
+  - {fileID: 4000}
+  - {fileID: 5000}
+  m_Father: {fileID: 0}
+
+# ── Rigidbody ───────────────────────────────────
+--- !u!54 &54
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 5
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 56
+  m_CollisionDetection: 1
+
+# ── CapsuleCollider (body) ──────────────────────
+--- !u!136 &136
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.4
+  m_Height: 1.6
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.8, z: 0}
+  m_Material: {fileID: 11400000, guid: ice-physics-material-guid, type: 2}
+
+# ── PlayerCollisionHandler ──────────────────────
+--- !u!137 &137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: player-collision-handler-guid, type: 3}
+  m_Name:
+
+# ── CharacterVisuals ────────────────────────────
+--- !u!114 &114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: character-visuals-guid, type: 3}
+  m_Name:
+  characterRenderer: {fileID: 1001}
+  dashTrailVFX: {fileID: 4001}
+  eliminationVFX: {fileID: 5001}
+  winGlowVFX: {fileID: 5002}
+  winPulseDuration: 4
+  winGlowCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 2
+      tangentMode: 0
+    - time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: -2
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+
+# ── Name label (TextMeshPro) ────────────────────
+--- !u!115 &115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: textmeshpro-guid, type: 3}
+
+# ═══ BODY MESH ══════════════════════════════════
+--- !u!1 &1000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1001}
+  - component: {fileID: 1002}
+  - component: {fileID: 1003}
+  m_Layer: 0
+  m_Name: Body
+  m_IsActive: 1
+--- !u!4 &1001x
+Transform:
+  m_GameObject: {fileID: 1000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.15, z: 0}
+  m_LocalScale: {x: 0.82, y: 0.82, z: 0.82}
+  m_Father: {fileID: 4}
+--- !u!33 &1002
+MeshFilter:
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1001
+MeshRenderer:
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_Materials:
+  - {fileID: 11400000, guid: char-shade-mat-guid, type: 2}
+
+# ═══ HEAD MESH ══════════════════════════════════
+--- !u!1 &2000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2001}
+  - component: {fileID: 2002}
+  - component: {fileID: 2003}
+  m_Layer: 0
+  m_Name: Head
+  m_IsActive: 1
+--- !u!4 &2001
+Transform:
+  m_GameObject: {fileID: 2000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.55, z: 0}
+  m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
+  m_Father: {fileID: 4}
+--- !u!33 &2002
+MeshFilter:
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &2003
+MeshRenderer:
+  m_CastShadows: 1
+  m_ReceiveShadows: 0
+  m_Materials:
+  - {fileID: 11400000, guid: char-shade-mat-guid, type: 2}
+
+# ═══ NAME LABEL ANCHOR ══════════════════════════
+--- !u!1 &3000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3001}
+  m_Layer: 0
+  m_Name: NameLabelAnchor
+  m_IsActive: 1
+--- !u!4 &3001
+Transform:
+  m_GameObject: {fileID: 3000}
+  m_LocalPosition: {x: 0, y: 2.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 4}
+
+# ═══ DASH TRAIL VFX ═════════════════════════════
+--- !u!1 &4000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4001}
+  - component: {fileID: 4002}
+  m_Layer: 0
+  m_Name: DashTrail
+  m_IsActive: 1
+--- !u!4 &4001
+Transform:
+  m_GameObject: {fileID: 4000}
+  m_LocalPosition: {x: 0, y: 0.8, z: -0.4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 4}
+--- !u!198 &4002
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 4000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 0.4
+      minMaxState: 0
+    startSpeed:
+      scalar: 0.1
+      minMaxState: 0
+    startSize:
+      scalar: 0.35
+      minMaxState: 0
+    startColor:
+      minMaxState: 0
+      color: {r: 0.608, g: 0.349, b: 0.714, a: 0.8}
+    maxNumParticles: 80
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 0
+      minMaxState: 0
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 0.25
+  TrailModule:
+    enabled: 1
+    ratio: 1
+    lifetime:
+      scalar: 0.3
+      minMaxState: 0
+    minVertexDistance: 0.05
+    textureMode: 0
+    worldSpace: 1
+
+# ═══ WIN + ELIMINATION VFX ══════════════════════
+--- !u!1 &5000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5001}
+  m_Layer: 0
+  m_Name: VFX_Root
+  m_IsActive: 1
+--- !u!4 &5001
+Transform:
+  m_GameObject: {fileID: 5000}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 4}

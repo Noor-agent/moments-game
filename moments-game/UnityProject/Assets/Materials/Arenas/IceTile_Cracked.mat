@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_Name: IceTile_Cracked
+  m_Shader: {fileID: 11500000, guid: ice-surface-shader-guid, type: 3}
+  m_SavedProperties:
+    serializedVersion: 3
+    m_Floats:
+    - _Smoothness: 0.55
+    - _CrackStrength: 0.85
+    - _VoronoiStrength: 0.12
+    m_Colors:
+    - _BaseColor: {r: 0.55, g: 0.72, b: 0.82, a: 0.85}
+    - _CrackColor: {r: 0.05, g: 0.1, b: 0.3, a: 1}

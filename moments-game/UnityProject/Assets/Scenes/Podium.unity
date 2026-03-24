@@ -1,0 +1,318 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_SceneGUID: 00000000000000000000000000000004
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 9
+  m_Fog: 0
+  m_AmbientSkyColor: {r: 0.05, g: 0.04, b: 0.10, a: 1}
+  m_AmbientIntensity: 0.9
+
+# ═══════════════════════════════════════════════════
+# PODIUM SCENE — End-of-session celebration
+# 1st/2nd/3rd podium pedestals, confetti, rematch
+# Lighting: warm spotlight on 1st place
+# ═══════════════════════════════════════════════════
+
+--- !u!1 &100000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 100000001}
+  - component: {fileID: 100000002}
+  m_Layer: 0
+  m_Name: PodiumRoot
+  m_IsActive: 1
+--- !u!4 &100000001
+Transform:
+  m_GameObject: {fileID: 100000000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 200000001}
+  - {fileID: 300000001}
+  - {fileID: 400000001}
+  - {fileID: 500000001}
+  - {fileID: 600000001}
+  - {fileID: 700000001}
+  m_Father: {fileID: 0}
+--- !u!114 &100000002
+MonoBehaviour:
+  m_GameObject: {fileID: 100000000}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: podium-scene-controller-guid, type: 3}
+  m_Name:
+  revealDelay: 1.5
+
+# ─── Camera ────────────────────────────────────────
+--- !u!1 &200000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200000001}
+  - component: {fileID: 200000002}
+  - component: {fileID: 200000003}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_IsActive: 1
+--- !u!4 &200000001
+Transform:
+  m_GameObject: {fileID: 200000000}
+  m_LocalPosition: {x: 0, y: 3, z: -12}
+  m_LocalRotation: {x: 0.087, y: 0, z: 0, w: 0.996}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!20 &200000002
+Camera:
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.04, g: 0.02, b: 0.08, a: 1}
+  field of view: 55
+  m_HDR: 1
+--- !u!81 &200000003
+AudioListener:
+  m_Enabled: 1
+
+# ─── Podium Geometry: 3 pedestals ──────────────────
+# 1st Place pedestal (tallest, center)
+--- !u!1 &300000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300000001}
+  - component: {fileID: 300000002}
+  - component: {fileID: 300000003}
+  m_Layer: 0
+  m_Name: Pedestal_1st
+  m_IsActive: 1
+--- !u!4 &300000001
+Transform:
+  m_GameObject: {fileID: 300000000}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2.5, y: 3.0, z: 2.5}
+  m_Father: {fileID: 100000001}
+--- !u!33 &300000002
+MeshFilter:
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &300000003
+MeshRenderer:
+  m_Materials:
+  - {fileID: 11400000, guid: podium-gold-material-guid, type: 2}
+
+# 2nd Place pedestal (left, medium height)
+--- !u!1 &310000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 310000001}
+  - component: {fileID: 310000002}
+  - component: {fileID: 310000003}
+  m_Layer: 0
+  m_Name: Pedestal_2nd
+  m_IsActive: 1
+--- !u!4 &310000001
+Transform:
+  m_GameObject: {fileID: 310000000}
+  m_LocalPosition: {x: -3.5, y: -0.5, z: 0}
+  m_LocalScale: {x: 2.5, y: 2.0, z: 2.5}
+  m_Father: {fileID: 100000001}
+--- !u!33 &310000002
+MeshFilter:
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &310000003
+MeshRenderer:
+  m_Materials:
+  - {fileID: 11400000, guid: podium-silver-material-guid, type: 2}
+
+# 3rd Place pedestal (right, shorter)
+--- !u!1 &320000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 320000001}
+  - component: {fileID: 320000002}
+  - component: {fileID: 320000003}
+  m_Layer: 0
+  m_Name: Pedestal_3rd
+  m_IsActive: 1
+--- !u!4 &320000001
+Transform:
+  m_GameObject: {fileID: 320000000}
+  m_LocalPosition: {x: 3.5, y: -0.8, z: 0}
+  m_LocalScale: {x: 2.5, y: 1.5, z: 2.5}
+  m_Father: {fileID: 100000001}
+--- !u!33 &320000002
+MeshFilter:
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &320000003
+MeshRenderer:
+  m_Materials:
+  - {fileID: 11400000, guid: podium-bronze-material-guid, type: 2}
+
+# ─── Podium Canvas (UI overlay) ────────────────────
+--- !u!1 &400000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 400000001}
+  - component: {fileID: 400000002}
+  - component: {fileID: 400000003}
+  m_Layer: 5
+  m_Name: PodiumCanvas
+  m_IsActive: 1
+--- !u!224 &400000001
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
+--- !u!223 &400000002
+Canvas:
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+--- !u!114 &400000003
+MonoBehaviour:
+  m_Enabled: 1
+  m_Script: {fileID: -405508275, guid: f70555f144d8491a852f8ec2b3c3c01a, type: 3}
+  m_UiScaleMode: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_MatchWidthOrHeight: 0.5
+
+# ─── Confetti VFX ──────────────────────────────────
+--- !u!1 &500000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 500000001}
+  - component: {fileID: 500000002}
+  m_Layer: 0
+  m_Name: ConfettiSystem
+  m_IsActive: 1
+--- !u!4 &500000001
+Transform:
+  m_GameObject: {fileID: 500000000}
+  m_LocalPosition: {x: 0, y: 12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!198 &500000002
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 500000000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 5
+      minMaxState: 0
+    startSpeed:
+      scalar: 8
+      minMaxState: 3
+      minScalar: 2
+    startSize:
+      scalar: 0.3
+      minMaxState: 3
+      minScalar: 0.1
+    startColor:
+      minMaxState: 1
+      color: {r: 1, g: 0.8, b: 0.2, a: 1}
+      maxColor: {r: 0, g: 0.75, b: 1, a: 1}
+    gravityModifier:
+      scalar: 0.4
+      minMaxState: 0
+    maxNumParticles: 500
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 0
+      minMaxState: 0
+    m_BurstCount: 1
+    m_Bursts:
+    - time: 0
+      minCount: 200
+      maxCount: 200
+      cycleCount: 0
+      repeatInterval: 0.01
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 6
+
+# ─── 1st Place Spotlight ───────────────────────────
+--- !u!1 &600000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 600000001}
+  - component: {fileID: 600000002}
+  m_Layer: 0
+  m_Name: Spotlight_1st
+  m_IsActive: 1
+--- !u!4 &600000001
+Transform:
+  m_GameObject: {fileID: 600000000}
+  m_LocalPosition: {x: 0, y: 8, z: -2}
+  m_LocalRotation: {x: 0.707, y: 0, z: 0, w: 0.707}
+  m_Father: {fileID: 100000001}
+--- !u!108 &600000002
+Light:
+  m_Enabled: 1
+  serializedVersion: 10
+  m_Type: 2
+  m_Color: {r: 1, g: 0.95, b: 0.7, a: 1}
+  m_Intensity: 3
+  m_SpotAngle: 35
+  m_Range: 20
+  m_ColorTemperature: 4500
+  m_UseColorTemperature: 1
+  m_Shadows:
+    m_Type: 2
+
+# ─── Directional Light ─────────────────────────────
+--- !u!1 &700000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 700000001}
+  - component: {fileID: 700000002}
+  m_Layer: 0
+  m_Name: Directional Light
+  m_IsActive: 1
+--- !u!4 &700000001
+Transform:
+  m_GameObject: {fileID: 700000000}
+  m_LocalRotation: {x: 0.408, y: -0.234, z: 0.109, w: 0.876}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_Father: {fileID: 100000001}
+--- !u!108 &700000002
+Light:
+  m_Enabled: 1
+  serializedVersion: 10
+  m_Type: 1
+  m_Color: {r: 0.9, g: 0.85, b: 1.0, a: 1}
+  m_Intensity: 0.7
+  m_ColorTemperature: 6000
+  m_UseColorTemperature: 1
+  m_Shadows:
+    m_Type: 2

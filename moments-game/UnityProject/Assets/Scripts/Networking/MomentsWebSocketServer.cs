@@ -1,37 +1,45 @@
+using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net;
-using System.Net.WebSockets;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using UnityEngine;
+using System.IO;
 
 /// <summary>
-/// Production WebSocket server for TV↔phone communication.
-/// Uses .NET System.Net.WebSockets (built into .NET 4.x / Unity 6).
-/// TV-authoritative: phones send intent, TV broadcasts state.
-/// Runs WebSocket I/O on background threads. Events are queued to main thread.
+/// Production WebSocket server for Moments — pure .NET, no external DLL required.
+/// Implements RFC 6455 WebSocket protocol directly using TcpListener.
+/// Handles: player join, input packets, reconnect, ping/pong.
+/// 
+/// TV acts as authoritative server. Phones connect here, send intent only.
+/// Thread-safe: all Unity API calls dispatched via MainThreadQueue.
 /// </summary>
 public class MomentsWebSocketServer : MonoBehaviour
 {
-    [Header("Config")]
-    [SerializeField] private int wsPort = 8765;
-    [SerializeField] private float pingIntervalSeconds = 5f;
-
     public static MomentsWebSocketServer Instance { get; private set; }
-    public string ServerAddress { get; private set; }
 
-    // Thread-safe event queue for main thread dispatch
-    private readonly Queue<(string connectionId, string message)> _incomingQueue = new();
-    private readonly object _queueLock = new();
+    [Header("Server Config")]
+    [SerializeField] private int port = 8765;
+    [SerializeField] private float pingInterval = 5f;
+    [SerializeField] private float clientTimeout = 30f;
 
-    private readonly Dictionary<string, WebSocketConnection> _connections = new();
-    private readonly object _connectionsLock = new();
+    // Thread-safe queues
+    private readonly ConcurrentQueue<Action> _mainThreadQueue = new();
+    private readonly ConcurrentDictionary<string, WsClient> _clients = new();
 
-    private HttpListener _httpListener;
-    private CancellationTokenSource _cts;
+    // Events dispatched on main thread
+    public event Action<string, string> OnMessageReceived;   // (clientId, jsonPayload)
+    public event Action<string> OnClientConnected;           // (clientId)
+    public event Action<string> OnClientDisconnected;        // (clientId)
+
+    private TcpListener _listener;
+    private Thread _listenThread;
     private bool _running;
+    private float _pingTimer;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────
 
     private void Awake()
     {
@@ -40,205 +48,356 @@ public class MomentsWebSocketServer : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    private void Start() => StartServer();
+
+    private void Update()
     {
-        _cts = new CancellationTokenSource();
-        StartServer();
+        // Drain main thread queue
+        while (_mainThreadQueue.TryDequeue(out var action))
+        {
+            try { action(); }
+            catch (Exception ex) { Debug.LogError($"[WSS] Main thread action error: {ex.Message}"); }
+        }
+
+        // Ping all clients periodically
+        _pingTimer += Time.deltaTime;
+        if (_pingTimer >= pingInterval)
+        {
+            _pingTimer = 0f;
+            PingAll();
+        }
+
+        // Timeout check
+        var now = DateTime.UtcNow;
+        foreach (var kv in _clients)
+        {
+            if ((now - kv.Value.LastPong).TotalSeconds > clientTimeout)
+            {
+                Debug.Log($"[WSS] Client {kv.Key} timed out");
+                DisconnectClient(kv.Key);
+            }
+        }
     }
 
-    private void StartServer()
+    private void OnDestroy() => StopServer();
+
+    // ── Server Control ─────────────────────────────────────────────────────
+
+    public void StartServer()
     {
-        ServerAddress = $"http://+:{wsPort}/join/";
-        _httpListener = new HttpListener();
-        _httpListener.Prefixes.Add(ServerAddress);
-        _httpListener.Start();
+        if (_running) return;
         _running = true;
-
-        var acceptThread = new Thread(AcceptLoop) { IsBackground = true, Name = "WS-Accept" };
-        acceptThread.Start();
-
-        StartCoroutine(PingLoop());
-        Debug.Log($"[WS] Server listening on ws://0.0.0.0:{wsPort}/join");
+        _listener = new TcpListener(IPAddress.Any, port);
+        _listener.Start();
+        _listenThread = new Thread(ListenLoop) { IsBackground = true, Name = "WSS-Accept" };
+        _listenThread.Start();
+        Debug.Log($"[WSS] WebSocket server started on ws://0.0.0.0:{port}");
     }
 
-    // ── Accept Loop (background thread) ──────────────────────────────────────
+    public void StopServer()
+    {
+        _running = false;
+        try { _listener?.Stop(); } catch { }
+        foreach (var kv in _clients)
+        {
+            try { kv.Value.TcpClient?.Close(); } catch { }
+        }
+        _clients.Clear();
+        Debug.Log("[WSS] Server stopped");
+    }
 
-    private void AcceptLoop()
+    // ── Accept Loop (background thread) ────────────────────────────────────
+
+    private void ListenLoop()
     {
         while (_running)
         {
             try
             {
-                var ctx = _httpListener.GetContext();
-                if (ctx.Request.IsWebSocketRequest)
-                {
-                    ThreadPool.QueueUserWorkItem(_ => HandleClientAsync(ctx));
-                }
-                else
-                {
-                    ctx.Response.StatusCode = 400;
-                    ctx.Response.Close();
-                }
+                var tcp = _listener.AcceptTcpClient();
+                var thread = new Thread(() => HandleClient(tcp)) { IsBackground = true };
+                thread.Start();
             }
-            catch (Exception e)
+            catch (SocketException) when (!_running) { break; }
+            catch (Exception ex)
             {
-                if (_running) Debug.LogWarning($"[WS] Accept error: {e.Message}");
+                if (_running) Debug.LogError($"[WSS] Accept error: {ex.Message}");
             }
         }
     }
 
-    private async void HandleClientAsync(HttpListenerContext ctx)
+    // ── Per-client handler (background thread) ─────────────────────────────
+
+    private void HandleClient(TcpClient tcp)
     {
-        var wsCtx = await ctx.AcceptWebSocketAsync(null);
-        var ws = wsCtx.WebSocket;
-        var connectionId = Guid.NewGuid().ToString("N").Substring(0, 8);
+        string clientId = Guid.NewGuid().ToString("N")[..8];
+        var stream = tcp.GetStream();
 
-        var conn = new WebSocketConnection(connectionId, ws);
-        lock (_connectionsLock) _connections[connectionId] = conn;
-
-        Debug.Log($"[WS] Client connected: {connectionId}");
-
-        var buffer = new byte[4096];
         try
         {
-            while (ws.State == WebSocketState.Open && !_cts.IsCancellationRequested)
+            // WebSocket handshake
+            if (!PerformHandshake(stream, out string path))
             {
-                var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), _cts.Token);
+                tcp.Close();
+                return;
+            }
 
-                if (result.MessageType == WebSocketMessageType.Close)
+            var client = new WsClient
+            {
+                ClientId   = clientId,
+                TcpClient  = tcp,
+                Stream     = stream,
+                ConnectedAt = DateTime.UtcNow,
+                LastPong   = DateTime.UtcNow,
+                Path       = path
+            };
+            _clients[clientId] = client;
+
+            _mainThreadQueue.Enqueue(() =>
+            {
+                Debug.Log($"[WSS] Client connected: {clientId} path={path}");
+                OnClientConnected?.Invoke(clientId);
+            });
+
+            // Read loop
+            while (_running && tcp.Connected)
+            {
+                string msg = ReadFrame(stream);
+                if (msg == null) break;
+
+                if (msg == "__pong__")
                 {
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                    break;
+                    client.LastPong = DateTime.UtcNow;
+                    continue;
                 }
 
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    lock (_queueLock) _incomingQueue.Enqueue((connectionId, message));
-                }
+                // Dispatch to main thread
+                string captured = msg;
+                string cid = clientId;
+                _mainThreadQueue.Enqueue(() => OnMessageReceived?.Invoke(cid, captured));
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.Log($"[WS] Client {connectionId} disconnected: {e.Message}");
+            if (_running) Debug.Log($"[WSS] Client {clientId} disconnected: {ex.Message}");
         }
         finally
         {
-            lock (_connectionsLock) _connections.Remove(connectionId);
-            // Notify session manager of disconnect
-            UnityMainThreadDispatcher.Enqueue(() =>
-                ControllerGateway.Instance?.HandleDisconnect(connectionId));
+            try { tcp.Close(); } catch { }
+            _clients.TryRemove(clientId, out _);
+            _mainThreadQueue.Enqueue(() =>
+            {
+                Debug.Log($"[WSS] Client disconnected: {clientId}");
+                OnClientDisconnected?.Invoke(clientId);
+            });
         }
     }
 
-    // ── Main Thread Dispatch ──────────────────────────────────────────────────
+    // ── RFC 6455 Handshake ─────────────────────────────────────────────────
 
-    private void Update()
+    private bool PerformHandshake(NetworkStream stream, out string path)
     {
-        lock (_queueLock)
+        path = "/";
+        var buf = new byte[4096];
+        int n = stream.Read(buf, 0, buf.Length);
+        var request = Encoding.UTF8.GetString(buf, 0, n);
+
+        // Parse path
+        var lines = request.Split('\n');
+        if (lines.Length > 0)
         {
-            while (_incomingQueue.Count > 0)
+            var parts = lines[0].Trim().Split(' ');
+            if (parts.Length > 1) path = parts[1];
+        }
+
+        // Extract Sec-WebSocket-Key
+        string key = null;
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("Sec-WebSocket-Key:", StringComparison.OrdinalIgnoreCase))
             {
-                var (connId, msg) = _incomingQueue.Dequeue();
-                ControllerGateway.Instance?.HandleIncomingMessage(connId, msg);
+                key = line.Substring("Sec-WebSocket-Key:".Length).Trim();
+                break;
             }
         }
+        if (key == null) return false;
+
+        // Compute accept key
+        string magic = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+        var hash = System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(magic));
+        string acceptKey = Convert.ToBase64String(hash);
+
+        var response = "HTTP/1.1 101 Switching Protocols\r\n" +
+                       "Upgrade: websocket\r\n" +
+                       "Connection: Upgrade\r\n" +
+                       $"Sec-WebSocket-Accept: {acceptKey}\r\n\r\n";
+        var respBytes = Encoding.UTF8.GetBytes(response);
+        stream.Write(respBytes, 0, respBytes.Length);
+        return true;
     }
 
-    // ── Send API ──────────────────────────────────────────────────────────────
+    // ── RFC 6455 Frame Reader ──────────────────────────────────────────────
 
-    public void SendToConnection(string connectionId, string json)
+    private string ReadFrame(NetworkStream stream)
     {
-        lock (_connectionsLock)
+        var header = new byte[2];
+        if (!ReadExact(stream, header, 2)) return null;
+
+        bool masked    = (header[1] & 0x80) != 0;
+        int  opcode    = header[0] & 0x0F;
+        long payloadLen = header[1] & 0x7F;
+
+        if (opcode == 8) return null; // Close
+        if (opcode == 10) return "__pong__"; // Pong
+
+        if (payloadLen == 126)
         {
-            if (_connections.TryGetValue(connectionId, out var conn))
-                conn.SendAsync(json, _cts.Token);
+            var ext = new byte[2];
+            if (!ReadExact(stream, ext, 2)) return null;
+            payloadLen = (ext[0] << 8) | ext[1];
+        }
+        else if (payloadLen == 127)
+        {
+            var ext = new byte[8];
+            if (!ReadExact(stream, ext, 8)) return null;
+            payloadLen = BitConverter.ToInt64(ext, 0);
+        }
+
+        byte[] mask = null;
+        if (masked)
+        {
+            mask = new byte[4];
+            if (!ReadExact(stream, mask, 4)) return null;
+        }
+
+        var payload = new byte[payloadLen];
+        if (!ReadExact(stream, payload, (int)payloadLen)) return null;
+
+        if (masked)
+            for (int i = 0; i < payload.Length; i++)
+                payload[i] ^= mask[i % 4];
+
+        if (opcode == 1) return Encoding.UTF8.GetString(payload); // Text
+        return null;
+    }
+
+    private bool ReadExact(NetworkStream stream, byte[] buf, int count)
+    {
+        int read = 0;
+        while (read < count)
+        {
+            int n = stream.Read(buf, read, count - read);
+            if (n == 0) return false;
+            read += n;
+        }
+        return true;
+    }
+
+    // ── RFC 6455 Frame Writer ──────────────────────────────────────────────
+
+    private void WriteFrame(NetworkStream stream, string text)
+    {
+        var payload = Encoding.UTF8.GetBytes(text);
+        var frame = new List<byte>();
+
+        frame.Add(0x81); // FIN + text opcode
+
+        if (payload.Length <= 125)
+            frame.Add((byte)payload.Length);
+        else if (payload.Length <= 65535)
+        {
+            frame.Add(126);
+            frame.Add((byte)(payload.Length >> 8));
+            frame.Add((byte)(payload.Length & 0xFF));
+        }
+        else
+        {
+            frame.Add(127);
+            var lenBytes = BitConverter.GetBytes((long)payload.Length);
+            if (BitConverter.IsLittleEndian) Array.Reverse(lenBytes);
+            frame.AddRange(lenBytes);
+        }
+
+        frame.AddRange(payload);
+        var frameArr = frame.ToArray();
+        stream.Write(frameArr, 0, frameArr.Length);
+    }
+
+    // ── Send / Broadcast ───────────────────────────────────────────────────
+
+    public void Send(string clientId, string json)
+    {
+        if (!_clients.TryGetValue(clientId, out var client)) return;
+        try
+        {
+            lock (client)
+            {
+                WriteFrame(client.Stream, json);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[WSS] Send to {clientId} failed: {ex.Message}");
+            DisconnectClient(clientId);
         }
     }
 
     public void Broadcast(string json)
     {
-        lock (_connectionsLock)
-        {
-            foreach (var conn in _connections.Values)
-                conn.SendAsync(json, _cts.Token);
-        }
+        foreach (var kv in _clients)
+            Send(kv.Key, json);
     }
 
-    // ── Ping ─────────────────────────────────────────────────────────────────
+    // ── Utilities ──────────────────────────────────────────────────────────
 
-    private IEnumerator PingLoop()
+    private void PingAll()
     {
-        while (_running)
+        // RFC 6455 ping frame: 0x89 0x00
+        foreach (var kv in _clients)
         {
-            yield return new WaitForSeconds(pingIntervalSeconds);
-            Broadcast("{\"type\":\"ping\"}");
-        }
-    }
-
-    private void OnDestroy()
-    {
-        _running = false;
-        _cts?.Cancel();
-        _httpListener?.Stop();
-    }
-
-    // ── Inner connection class ────────────────────────────────────────────────
-
-    private class WebSocketConnection
-    {
-        public string Id { get; }
-        private readonly WebSocket _ws;
-        private readonly SemaphoreSlim _sendLock = new(1, 1);
-
-        public WebSocketConnection(string id, WebSocket ws)
-        {
-            Id = id;
-            _ws = ws;
-        }
-
-        public async void SendAsync(string json, CancellationToken ct)
-        {
-            if (_ws.State != WebSocketState.Open) return;
-            await _sendLock.WaitAsync(ct);
             try
             {
-                var bytes = Encoding.UTF8.GetBytes(json);
-                await _ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, ct);
+                lock (kv.Value)
+                {
+                    kv.Value.Stream.Write(new byte[] { 0x89, 0x00 }, 0, 2);
+                }
             }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[WS] Send error to {Id}: {e.Message}");
-            }
-            finally
-            {
-                _sendLock.Release();
-            }
+            catch { DisconnectClient(kv.Key); }
         }
     }
-}
 
-/// <summary>
-/// Simple main-thread dispatcher for background thread → Unity main thread callbacks.
-/// Add this to the Bootstrap scene root alongside the WebSocket server.
-/// </summary>
-public static class UnityMainThreadDispatcher
-{
-    private static readonly Queue<Action> _queue = new();
-    private static readonly object _lock = new();
-
-    public static void Enqueue(Action action)
+    private void DisconnectClient(string clientId)
     {
-        lock (_lock) _queue.Enqueue(action);
-    }
-
-    // Call this from a MonoBehaviour Update() on a persistent scene object
-    public static void Flush()
-    {
-        lock (_lock)
+        if (_clients.TryRemove(clientId, out var client))
         {
-            while (_queue.Count > 0)
-                _queue.Dequeue()?.Invoke();
+            try { client.TcpClient?.Close(); } catch { }
         }
+    }
+
+    public string GetLocalIP()
+    {
+        try
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    return ip.ToString();
+        }
+        catch { }
+        return "127.0.0.1";
+    }
+
+    public int ConnectedClientCount => _clients.Count;
+
+    // ── Inner Types ────────────────────────────────────────────────────────
+
+    private class WsClient
+    {
+        public string ClientId;
+        public TcpClient TcpClient;
+        public NetworkStream Stream;
+        public DateTime ConnectedAt;
+        public DateTime LastPong;
+        public string Path;
     }
 }

@@ -1,0 +1,484 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_SceneGUID: 00000000000000000000000000000010
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 9
+  m_Fog: 1
+  m_FogColor: {r: 0.05, g: 0.08, b: 0.18, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.008
+  m_AmbientSkyColor: {r: 0.41, g: 0.55, b: 0.82, a: 1}
+  m_AmbientEquatorColor: {r: 0.2, g: 0.3, b: 0.55, a: 1}
+  m_AmbientGroundColor: {r: 0.05, g: 0.08, b: 0.18, a: 1}
+  m_AmbientIntensity: 0.8
+  m_AmbientMode: 0
+  m_SkyboxMaterial: {fileID: 11400000, guid: polar-push-skybox-guid, type: 2}
+  m_Sun: {fileID: 200000002}
+
+# ═══════════════════════════════════════════════════
+# POLAR PUSH SCENE
+# Arctic glacier platform · aurora night sky
+# Camera: 30° above, slight cinematic drift
+# Lighting: cold 6500K directional + aurora fill
+# ═══════════════════════════════════════════════════
+
+--- !u!1 &100000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 100000001}
+  - component: {fileID: 100000002}
+  - component: {fileID: 100000003}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &100000001
+Transform:
+  m_GameObject: {fileID: 100000000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 200000001}
+  - {fileID: 300000001}
+  - {fileID: 400000001}
+  - {fileID: 500000001}
+  - {fileID: 600000001}
+  m_Father: {fileID: 0}
+--- !u!114 &100000002
+MonoBehaviour:
+  m_GameObject: {fileID: 100000000}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: polar-push-game-guid, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  moveSpeed: 8
+  dashForce: 25
+  dashCooldown: 2
+  eliminationHeight: -5
+  platformShrinkInterval: 20
+  spawnPoints:
+  - {fileID: 310000001}
+  - {fileID: 320000001}
+  - {fileID: 330000001}
+  - {fileID: 340000001}
+  - {fileID: 350000001}
+  - {fileID: 360000001}
+  - {fileID: 370000001}
+  - {fileID: 380000001}
+  platformManager: {fileID: 100000003}
+--- !u!114 &100000003
+MonoBehaviour:
+  m_GameObject: {fileID: 100000000}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: ice-platform-manager-guid, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  ringCount: 4
+  tileRadius: 1.2
+  tileGap: 0.05
+  collapseDelay: 1.5
+  tilesToRemovePerShrink: [6, 8, 10, 14]
+
+# ─── Main Camera ───────────────────────────────────
+--- !u!1 &200000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200000001}
+  - component: {fileID: 200000002}
+  - component: {fileID: 200000003}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_IsActive: 1
+--- !u!4 &200000001
+Transform:
+  m_GameObject: {fileID: 200000000}
+  m_LocalRotation: {x: 0.342, y: 0, z: 0, w: 0.9397}
+  m_LocalPosition: {x: 0, y: 18, z: -22}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!20 &200000002
+Camera:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 200000000}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.02, g: 0.04, b: 0.12, a: 1}
+  m_projectionMatrixMode: 1
+  m_FOVAxisMode: 0
+  near clip plane: 0.3
+  far clip plane: 500
+  field of view: 55
+  orthographic: 0
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_HDR: 1
+  m_AllowMSAA: 1
+--- !u!81 &200000003
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 200000000}
+  m_Enabled: 1
+
+# ─── Directional Light (moon/aurora) ───────────────
+--- !u!1 &200000010
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200000002x}
+  - component: {fileID: 200000002}
+  m_Layer: 0
+  m_Name: Moon Light
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &200000002x
+Transform:
+  m_GameObject: {fileID: 200000010}
+  m_LocalRotation: {x: 0.5, y: -0.2, z: 0.1, w: 0.84}
+  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 100000001}
+--- !u!108 &200000002
+Light:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 200000010}
+  m_Enabled: 1
+  serializedVersion: 10
+  m_Type: 1
+  m_Color: {r: 0.75, g: 0.88, b: 1.0, a: 1}
+  m_Intensity: 0.9
+  m_ColorTemperature: 6500
+  m_UseColorTemperature: 1
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_Strength: 0.8
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+
+# ─── Aurora Fill Light ─────────────────────────────
+--- !u!1 &200000020
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200000021}
+  - component: {fileID: 200000022}
+  m_Layer: 0
+  m_Name: Aurora Fill
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &200000021
+Transform:
+  m_GameObject: {fileID: 200000020}
+  m_LocalRotation: {x: -0.5, y: 0.2, z: -0.1, w: 0.84}
+  m_LocalPosition: {x: 0, y: 5, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 100000001}
+--- !u!108 &200000022
+Light:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 200000020}
+  m_Enabled: 1
+  serializedVersion: 10
+  m_Type: 1
+  m_Color: {r: 0.2, g: 1.0, b: 0.6, a: 1}
+  m_Intensity: 0.3
+  m_Shadows:
+    m_Type: 0
+
+# ─── Ice Platform (procedural via IcePlatformManager) ─
+--- !u!1 &300000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300000001}
+  m_Layer: 0
+  m_Name: IcePlatform
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &300000001
+Transform:
+  m_GameObject: {fileID: 300000000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 100000001}
+
+# ─── Spawn Points ──────────────────────────────────
+--- !u!1 &310000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 310000001}
+  m_Layer: 0
+  m_Name: Spawn_0
+  m_IsActive: 1
+--- !u!4 &310000001
+Transform:
+  m_GameObject: {fileID: 310000000}
+  m_LocalPosition: {x: 0, y: 0.5, z: 6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &320000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 320000001}
+  m_Layer: 0
+  m_Name: Spawn_1
+  m_IsActive: 1
+--- !u!4 &320000001
+Transform:
+  m_GameObject: {fileID: 320000000}
+  m_LocalPosition: {x: 5.2, y: 0.5, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &330000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 330000001}
+  m_Layer: 0
+  m_Name: Spawn_2
+  m_IsActive: 1
+--- !u!4 &330000001
+Transform:
+  m_GameObject: {fileID: 330000000}
+  m_LocalPosition: {x: 5.2, y: 0.5, z: -3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &340000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 340000001}
+  m_Layer: 0
+  m_Name: Spawn_3
+  m_IsActive: 1
+--- !u!4 &340000001
+Transform:
+  m_GameObject: {fileID: 340000000}
+  m_LocalPosition: {x: 0, y: 0.5, z: -6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &350000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 350000001}
+  m_Layer: 0
+  m_Name: Spawn_4
+  m_IsActive: 1
+--- !u!4 &350000001
+Transform:
+  m_GameObject: {fileID: 350000000}
+  m_LocalPosition: {x: -5.2, y: 0.5, z: -3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &360000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 360000001}
+  m_Layer: 0
+  m_Name: Spawn_5
+  m_IsActive: 1
+--- !u!4 &360000001
+Transform:
+  m_GameObject: {fileID: 360000000}
+  m_LocalPosition: {x: -5.2, y: 0.5, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &370000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 370000001}
+  m_Layer: 0
+  m_Name: Spawn_6
+  m_IsActive: 1
+--- !u!4 &370000001
+Transform:
+  m_GameObject: {fileID: 370000000}
+  m_LocalPosition: {x: 3, y: 0.5, z: 5.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+--- !u!1 &380000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 380000001}
+  m_Layer: 0
+  m_Name: Spawn_7
+  m_IsActive: 1
+--- !u!4 &380000001
+Transform:
+  m_GameObject: {fileID: 380000000}
+  m_LocalPosition: {x: -3, y: 0.5, z: -5.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+
+# ─── TV HUD Canvas ─────────────────────────────────
+--- !u!1 &400000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 400000001}
+  - component: {fileID: 400000002}
+  m_Layer: 5
+  m_Name: HUD Canvas
+  m_IsActive: 1
+--- !u!224 &400000001
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 400000000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!223 &400000002
+Canvas:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 400000000}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_PixelPerfect: 0
+
+# ─── VFX: Aurora Particles ─────────────────────────
+--- !u!1 &500000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 500000001}
+  - component: {fileID: 500000002}
+  m_Layer: 0
+  m_Name: AuroraParticles
+  m_IsActive: 1
+--- !u!4 &500000001
+Transform:
+  m_GameObject: {fileID: 500000000}
+  m_LocalPosition: {x: 0, y: 30, z: 20}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!198 &500000002
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 500000000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 8
+      minMaxState: 0
+    startSpeed:
+      scalar: 0.2
+      minMaxState: 0
+    startSize:
+      scalar: 4
+      minMaxState: 0
+    startColor:
+      minMaxState: 0
+      color: {r: 0.2, g: 1, b: 0.6, a: 0.4}
+    maxNumParticles: 200
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 15
+      minMaxState: 0
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 40
+  ColorOverLifetimeModule:
+    enabled: 1
+  SizeOverLifetimeModule:
+    enabled: 1
+
+# ─── VFX: Snowfall ─────────────────────────────────
+--- !u!1 &600000000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 600000001}
+  - component: {fileID: 600000002}
+  m_Layer: 0
+  m_Name: Snowfall
+  m_IsActive: 1
+--- !u!4 &600000001
+Transform:
+  m_GameObject: {fileID: 600000000}
+  m_LocalPosition: {x: 0, y: 15, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 100000001}
+--- !u!198 &600000002
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 600000000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 6
+      minMaxState: 0
+    startSpeed:
+      scalar: 1.5
+      minMaxState: 0
+    startSize:
+      scalar: 0.05
+      minMaxState: 0
+    startColor:
+      minMaxState: 0
+      color: {r: 1, g: 1, b: 1, a: 0.8}
+    gravityModifier:
+      scalar: 0.1
+      minMaxState: 0
+    maxNumParticles: 500
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 60
+      minMaxState: 0
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 20

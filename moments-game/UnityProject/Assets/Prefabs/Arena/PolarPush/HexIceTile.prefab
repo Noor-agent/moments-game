@@ -1,0 +1,254 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+
+# ══════════════════════════════════════════════════════════
+# HexIceTile Prefab
+# Single hexagonal ice tile for the Polar Push arena.
+# IcePlatformManager spawns ~61 of these in a 4-ring hex grid.
+#
+# Visual layers:
+#   - Top surface: IceSurface shader (transparent, SSS, voronoi cracks)
+#   - Underside: darker ice for depth
+#   - Edge trim: slight glow strip showing tile color health
+#
+# Physics:
+#   - MeshCollider (convex hex mesh)  ← swap for actual hex mesh in prod
+#   - Rigidbody kinematic=true until TriggerCrack()
+#   - PhysicsMaterial: slippery (friction=0.05, bounciness=0.1)
+#
+# VFX children:
+#   - CrackParticles (ice shards, plays on crack)
+#   - ShatterParticles (big burst, plays on collapse)
+# ══════════════════════════════════════════════════════════
+
+--- !u!1 &1
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4}
+  - component: {fileID: 33}
+  - component: {fileID: 64}
+  - component: {fileID: 54}
+  - component: {fileID: 114}
+  m_Layer: 0
+  m_Name: HexIceTile
+  m_TagString: IceTile
+  m_IsActive: 1
+
+--- !u!4 &4
+Transform:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 0.18, z: 1}
+  m_Children:
+  - {fileID: 1000}
+  - {fileID: 2000}
+  - {fileID: 3000}
+  m_Father: {fileID: 0}
+
+# Cylinder mesh as hex stand-in (swap for hex mesh in production)
+--- !u!33 &33
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+
+--- !u!23 &23
+MeshRenderer:
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_Materials:
+  - {fileID: 11400000, guid: ice-tile-intact-mat-guid, type: 2}
+
+--- !u!64 &64
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  m_Material: {fileID: 11400000, guid: ice-physics-material-guid, type: 2}
+
+--- !u!54 &54
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  serializedVersion: 2
+  m_Mass: 0.5
+  m_Drag: 0.5
+  m_AngularDrag: 2
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+
+--- !u!114 &114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: ice-tile-script-guid, type: 3}
+  m_Name:
+  tileRenderer: {fileID: 23}
+  intactMaterial: {fileID: 11400000, guid: ice-tile-intact-mat-guid, type: 2}
+  crackedMaterial: {fileID: 11400000, guid: ice-tile-cracked-mat-guid, type: 2}
+  shatteringMaterial: {fileID: 11400000, guid: ice-tile-shattering-mat-guid, type: 2}
+  crackParticles: {fileID: 1001}
+  shatterParticles: {fileID: 2001}
+
+# ─── Crack Particles ───────────────────────────────────────────────
+--- !u!1 &1000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1001x}
+  - component: {fileID: 1001}
+  m_Layer: 0
+  m_Name: CrackParticles
+  m_IsActive: 1
+--- !u!4 &1001x
+Transform:
+  m_GameObject: {fileID: 1000}
+  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 4}
+--- !u!198 &1001
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 1000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 0.8
+      minMaxState: 3
+      minScalar: 0.4
+    startSpeed:
+      scalar: 3
+      minMaxState: 3
+      minScalar: 1
+    startSize:
+      scalar: 0.12
+      minMaxState: 3
+      minScalar: 0.04
+    startColor:
+      minMaxState: 1
+      color: {r: 0.7, g: 0.9, b: 1, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 0.8}
+    gravityModifier:
+      scalar: 1.5
+      minMaxState: 0
+    maxNumParticles: 30
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 0
+      minMaxState: 0
+    m_BurstCount: 1
+    m_Bursts:
+    - time: 0
+      minCount: 12
+      maxCount: 24
+      cycleCount: 1
+      repeatInterval: 0.01
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 0.5
+  playOnAwake: 0
+
+# ─── Shatter Particles ─────────────────────────────────────────────
+--- !u!1 &2000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2001x}
+  - component: {fileID: 2001}
+  m_Layer: 0
+  m_Name: ShatterParticles
+  m_IsActive: 1
+--- !u!4 &2001x
+Transform:
+  m_GameObject: {fileID: 2000}
+  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Father: {fileID: 4}
+--- !u!198 &2001
+ParticleSystem:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 2000}
+  serializedVersion: 6
+  InitialModule:
+    enabled: 1
+    startLifetime:
+      scalar: 1.2
+      minMaxState: 0
+    startSpeed:
+      scalar: 6
+      minMaxState: 3
+      minScalar: 2
+    startSize:
+      scalar: 0.2
+      minMaxState: 3
+      minScalar: 0.06
+    startColor:
+      minMaxState: 1
+      color: {r: 0.5, g: 0.8, b: 1, a: 0.9}
+      maxColor: {r: 0.9, g: 0.97, b: 1, a: 0.7}
+    gravityModifier:
+      scalar: 2
+      minMaxState: 0
+    maxNumParticles: 60
+  EmissionModule:
+    enabled: 1
+    rateOverTime:
+      scalar: 0
+      minMaxState: 0
+    m_BurstCount: 1
+    m_Bursts:
+    - time: 0
+      minCount: 30
+      maxCount: 50
+      cycleCount: 1
+      repeatInterval: 0.01
+  ShapeModule:
+    enabled: 1
+    shapeType: 0
+    radius: 0.6
+  playOnAwake: 0
+
+# ─── Edge Glow (rim light strip) ──────────────────────────────────
+--- !u!1 &3000
+GameObject:
+  m_ObjectHideFlags: 0
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3001}
+  - component: {fileID: 3002}
+  - component: {fileID: 3003}
+  m_Layer: 0
+  m_Name: EdgeGlow
+  m_IsActive: 1
+--- !u!4 &3001
+Transform:
+  m_GameObject: {fileID: 3000}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.04, y: 1.0, z: 1.04}
+  m_Father: {fileID: 4}
+--- !u!33 &3002
+MeshFilter:
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &3003
+MeshRenderer:
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_Materials:
+  - {fileID: 11400000, guid: ice-tile-edge-glow-guid, type: 2}

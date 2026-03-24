@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: mini-game-definition-guid, type: 3}
+  m_Name: MiniGameDef_bumper_blitz
+  gameId: bumper-blitz
+  displayName: Bumper Blitz
+  rulesLine: Complete 3 laps first!
+  durationSeconds: 90
+  minPlayers: 2
+  maxPlayers: 8
+  scoringMode: LapsFirst
+  controllerLayout: SteerAndBump
+  sceneAddress: Scenes/BumperBlitz
+  hasElimination: 1

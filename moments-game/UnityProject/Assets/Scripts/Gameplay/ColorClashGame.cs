@@ -107,15 +107,25 @@ public class ColorClashGame : MiniGameBase
     private void PaintTile(ColorTile tile, PlayerData player)
     {
         tile.SetColor(player.playerColor);
+        VFXManager.Instance?.Play(VFXManager.VFXType.PaintSplat, tile.transform.position + Vector3.up * 0.1f);
     }
 
     protected override void CalculateFinalScores()
     {
-        // Count tiles per player
+        // Count tiles per player — also push score preview to phones in last 10s of game
         var tileCounts = new Dictionary<int, int>();
         foreach (var slot in _tileOwners)
             if (slot >= 0)
                 tileCounts.TryGetValue(slot, out _);
+
+        int topTiles = 0;
+        foreach (var p in activePlayers)
+        {
+            int tiles = 0;
+            foreach (var slot in _tileOwners)
+                if (slot == p.playerSlot) tiles++;
+            if (tiles > topTiles) topTiles = tiles;
+        }
 
         foreach (var p in activePlayers)
         {
@@ -123,37 +133,85 @@ public class ColorClashGame : MiniGameBase
             foreach (var slot in _tileOwners)
                 if (slot == p.playerSlot) tiles++;
 
-            AddScore(p.playerId, tiles * 12); // 12 points per tile
-            Debug.Log($"[ColorClash] {p.nickname}: {tiles} tiles = {tiles * 12} pts");
+            int pts = tiles * 12;
+            AddScore(p.playerId, pts);
+
+            // Territory lead bonus
+            if (tiles == topTiles && topTiles > 0)
+                AddScore(p.playerId, 200);
+
+            ControllerGateway.Instance?.SendUICommand(p.playerId, "show_feedback",
+                $"{tiles} tiles · {pts + (tiles == topTiles ? 200 : 0)} pts");
+            Debug.Log($"[ColorClash] {p.nickname}: {tiles} tiles = {pts} pts");
         }
     }
 
-    protected override void OnGameStart() => Debug.Log("[ColorClash] GO!");
-    protected override void OnGameEnd() => Debug.Log("[ColorClash] Time's up!");
+    protected override void OnGameStart()
+    {
+        Debug.Log("[ColorClash] GO!");
+        ControllerGateway.Instance?.BroadcastHaptic("game_start");
+    }
+
+    protected override void OnGameEnd()
+    {
+        Debug.Log("[ColorClash] Time's up!");
+        if (tileGrid != null)
+            foreach (var t in tileGrid)
+                t?.FreezeColor();
+        VFXManager.Instance?.Confetti(Vector3.up * 2f);
+    }
 }
 
 /// <summary>
-/// Individual tile component. Animates color transition on paint.
+/// Individual tile component. Animates color transition on paint using MaterialPropertyBlock
+/// (zero material instances created — safe for 64 tiles at 60fps).
 /// </summary>
 public class ColorTile : MonoBehaviour
 {
     [SerializeField] private Renderer tileRenderer;
     [SerializeField] private float transitionSpeed = 10f;
 
-    private Color _targetColor = Color.white;
-    private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+    private Color _currentColor = Color.white;
+    private Color _targetColor  = Color.white;
+    private bool  _frozen;
+
+    private MaterialPropertyBlock _mpb;
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int BlendFactor = Shader.PropertyToID("_BlendFactor");
+
+    private void Awake()
+    {
+        _mpb = new MaterialPropertyBlock();
+        if (tileRenderer == null) tileRenderer = GetComponent<Renderer>();
+        // Set initial white
+        tileRenderer.GetPropertyBlock(_mpb);
+        _mpb.SetColor(BaseColorId, Color.white);
+        tileRenderer.SetPropertyBlock(_mpb);
+    }
 
     public void SetColor(Color color)
     {
+        if (_frozen) return;
         _targetColor = color;
-        // Trigger paint splat VFX (particle system)
-        // paintSplatVFX.SetColor("_Color", color);
-        // paintSplatVFX.Play();
+    }
+
+    /// <summary>Called at game end — lock the displayed color in place.</summary>
+    public void FreezeColor()
+    {
+        _frozen = true;
     }
 
     private void Update()
     {
-        var current = tileRenderer.material.GetColor(BaseColor);
-        tileRenderer.material.SetColor(BaseColor, Color.Lerp(current, _targetColor, Time.deltaTime * transitionSpeed));
+        if (_frozen) return;
+
+        _currentColor = Color.Lerp(_currentColor, _targetColor, Time.deltaTime * transitionSpeed);
+
+        tileRenderer.GetPropertyBlock(_mpb);
+        _mpb.SetColor(BaseColorId, _currentColor);
+        // TilePaint shader drives emission pulse via BlendFactor; 1 = fully painted
+        float blend = 1f - Color.Distance(_currentColor, _targetColor) / 1.732f; // sqrt(3) max dist
+        _mpb.SetFloat(BlendFactor, Mathf.Clamp01(blend));
+        tileRenderer.SetPropertyBlock(_mpb);
     }
 }
