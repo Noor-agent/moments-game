@@ -1,12 +1,10 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!48 &48
+fileFormatVersion: 2
+guid: 11de8e3488e7b66898dd2af8232385aa
 ShaderImporter:
   externalObjects: {}
   defaultTextures: []
   nonModifiableTextures: []
   preprocessorOverride: 0
-  userData:
-  assetBundleName:
-  assetBundleVariant:
-guid: 11de8e3488e7b66898dd2af8232385aa
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

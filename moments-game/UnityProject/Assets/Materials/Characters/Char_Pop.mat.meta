@@ -1,10 +1,8 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!21 &2100000
+fileFormatVersion: 2
+guid: a9974d2ad7ad7dd4d33a846d643b4a9a
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
-  userData:
-  assetBundleName:
-  assetBundleVariant:
-guid: a9974d2ad7ad7dd4d33a846d643b4a9a
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

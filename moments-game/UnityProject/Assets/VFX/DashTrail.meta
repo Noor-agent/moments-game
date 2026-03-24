@@ -1,18 +1,8 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!102 &102
-AssetImporter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+fileFormatVersion: 2
+guid: f3a19227ee3728c96cf16685d943679e
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
-guid: f3a19227ee3728c96cf16685d943679e
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

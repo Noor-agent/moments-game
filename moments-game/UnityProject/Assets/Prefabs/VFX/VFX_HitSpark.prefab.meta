@@ -1,9 +1,7 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!1001 &100100000
+fileFormatVersion: 2
+guid: 200629710637d3a883a7a34b0ffce484
 PrefabImporter:
   externalObjects: {}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
-guid: 200629710637d3a883a7a34b0ffce484
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

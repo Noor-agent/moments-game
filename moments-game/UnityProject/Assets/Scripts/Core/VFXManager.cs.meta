@@ -1,13 +1,11 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!11400000 &11400000
+fileFormatVersion: 2
+guid: c74dc5fa50a75d23d72dda6afa396688
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
-guid: c74dc5fa50a75d23d72dda6afa396688
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

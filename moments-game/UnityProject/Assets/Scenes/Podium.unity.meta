@@ -1,11 +1,7 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!1020 &1020
-SceneAsset:
-  serializedVersion: 1
+fileFormatVersion: 2
 guid: cec4ea025d963159e23695d5b858a7db
 DefaultImporter:
   externalObjects: {}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
