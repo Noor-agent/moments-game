@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Moments Controller</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --player-color: #00BFFF;
+      --bg: #0A0A0A;
+      --text: #FFFFFF;
+      --frame-width: 8px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* ─── Player Color Frame (8px border) ─── */
+    #frame-border {
+      position: fixed;
+      inset: 0;
+      border: var(--frame-width) solid var(--player-color);
+      pointer-events: none;
+      z-index: 999;
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.05);
+      transition: border-color 0.3s ease;
+    }
+
+    /* ─── Screens ─── */
+    .screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      gap: 20px;
+    }
+    .screen.active { display: flex; }
+
+    /* ─── Join Screen ─── */
+    #screen-join .logo {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: var(--player-color);
+    }
+    #screen-join .subtitle {
+      font-size: 16px;
+      opacity: 0.6;
+      text-align: center;
+    }
+    #nickname-input {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 16px 24px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #nickname-input:focus { border-color: var(--player-color); }
+    #nickname-input::placeholder { opacity: 0.3; }
+
+    .btn-primary {
+      background: var(--player-color);
+      color: #000;
+      font-size: 22px;
+      font-weight: 800;
+      padding: 18px 40px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      max-width: 320px;
+      letter-spacing: 0.5px;
+      transition: transform 0.1s, opacity 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
+
+    /* ─── Character Select Screen ─── */
+    #screen-chars {
+      gap: 0;
+      padding: 0;
+    }
+    .char-header {
+      padding: 24px 24px 12px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .char-header .avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--player-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .char-header .name-tag { font-size: 18px; font-weight: 700; }
+
+    .char-carousel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      overflow-x: scroll;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      gap: 16px;
+      padding: 16px 24px;
+      width: 100%;
+    }
+    .char-carousel::-webkit-scrollbar { display: none; }
+
+    .char-card {
+      scroll-snap-align: center;
+      flex: 0 0 200px;
+      height: 280px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .char-card.selected {
+      border-color: var(--player-color);
+      background: rgba(var(--player-color-rgb), 0.12);
+      transform: scale(1.02);
+    }
+    .char-card.taken {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .char-card .char-emoji { font-size: 64px; }
+    .char-card .char-name { font-size: 22px; font-weight: 800; }
+    .char-card .char-desc { font-size: 12px; opacity: 0.5; text-align: center; line-height: 1.4; }
+    .char-card .taken-badge {
+      background: rgba(255,0,0,0.7);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .char-footer {
+      padding: 16px 24px 32px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #btn-lock {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    #btn-lock.ready-to-lock {
+      background: var(--player-color);
+      border-color: var(--player-color);
+      color: #000;
+    }
+
+    /* ─── Ready Screen ─── */
+    #screen-ready {
+      gap: 24px;
+      text-align: center;
+    }
+    .ready-hero-emoji { font-size: 96px; }
+    .ready-hero-name { font-size: 32px; font-weight: 900; }
+    .ready-label { font-size: 18px; opacity: 0.5; }
+    .ready-pulse {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--player-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.85; }
+    }
+    .waiting-text { font-size: 16px; opacity: 0.4; }
+
+    /* ─── Game Controller Screens ─── */
+    #screen-controller {
+      padding: 0;
+      background: var(--bg);
+    }
+
+    /* Joystick zone */
+    .joystick-zone {
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .joystick-knob {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--player-color);
+      opacity: 0.85;
+      transition: transform 0.05s;
+      pointer-events: none;
+    }
+
+    /* Action buttons */
+    .action-btn {
+      position: absolute;
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      border: 3px solid var(--player-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      color: var(--player-color);
+      font-weight: 900;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+      transition: background 0.08s, transform 0.08s;
+    }
+    .action-btn:active, .action-btn.pressed {
+      background: var(--player-color);
+      color: #000;
+      transform: scale(0.92);
+    }
+
+    /* HUD top bar */
+    .controller-hud {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(0,0,0,0.4);
+    }
+    .hud-avatar { font-size: 24px; }
+    .hud-name { font-size: 14px; font-weight: 700; }
+    .hud-score {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--player-color);
+    }
+
+    /* Connection status */
+    #conn-status {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #f44;
+      z-index: 1000;
+      transition: background 0.3s;
+    }
+    #conn-status.connected { background: #4f4; }
+
+    /* Countdown overlay */
+    #countdown-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 800;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #countdown-overlay.active { display: flex; }
+    .countdown-number {
+      font-size: 120px;
+      font-weight: 900;
+      color: var(--player-color);
+      animation: countPop 0.4s ease;
+    }
+    @keyframes countPop {
+      0% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .countdown-label { font-size: 20px; opacity: 0.5; letter-spacing: 3px; }
+
+    /* Eliminated overlay */
+    #eliminated-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(180,0,0,0.7);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #eliminated-overlay.active { display: flex; }
+    .eliminated-text { font-size: 48px; font-weight: 900; }
+    .eliminated-sub { font-size: 18px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <!-- Connection status dot -->
+  <div id="conn-status"></div>
+
+  <!-- Player color frame -->
+  <div id="frame-border"></div>
+
+  <!-- Countdown overlay -->
+  <div id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-label">GET READY</div>
+  </div>
+
+  <!-- Eliminated overlay -->
+  <div id="eliminated-overlay">
+    <div class="countdown-number">💀</div>
+    <div class="eliminated-text">OUT!</div>
+    <div class="eliminated-sub">Watching from the couch...</div>
+  </div>
+
+  <!-- ── SCREEN: JOIN ── -->
+  <div class="screen active" id="screen-join">
+    <div class="logo">MOMENTS</div>
+    <div class="subtitle">The party starts on your phone</div>
+    <input
+      id="nickname-input"
+      type="text"
+      placeholder="Your name..."
+      maxlength="12"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    />
+    <button class="btn-primary" id="btn-join">JOIN ROOM</button>
+  </div>
+
+  <!-- ── SCREEN: CHARACTER SELECT ── -->
+  <div class="screen" id="screen-chars">
+    <div class="char-header">
+      <div class="avatar" id="player-avatar">?</div>
+      <div class="name-tag" id="player-name-display">Player</div>
+    </div>
+
+    <div class="char-carousel" id="char-carousel">
+      <!-- Cards injected by JS -->
+    </div>
+
+    <div class="char-footer">
+      <button class="btn-primary" id="btn-lock">HOLD TO LOCK IN</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: READY ── -->
+  <div class="screen" id="screen-ready">
+    <div class="ready-hero-emoji" id="ready-hero-emoji">🎮</div>
+    <div class="ready-hero-name" id="ready-hero-name">Byte</div>
+    <div class="ready-pulse">✓</div>
+    <div class="ready-label">You're locked in!</div>
+    <div class="waiting-text">Waiting for others...</div>
+  </div>
+
+  <!-- ── SCREEN: CONTROLLER ── -->
+  <div class="screen" id="screen-controller">
+    <!-- HUD bar -->
+    <div class="controller-hud">
+      <div class="hud-avatar" id="ctrl-avatar">🎮</div>
+      <div class="hud-name" id="ctrl-name">Player</div>
+      <div class="hud-score" id="ctrl-score">0</div>
+    </div>
+    <!-- Dynamic layout rendered by JS per mini-game -->
+    <div id="controller-layout-root"></div>
+  </div>
+
+  <script>
+  (() => {
+    // ── Hero Roster ──
+    const HEROES = [
+      { id: 'byte',    name: 'Byte',    emoji: '🎮', desc: 'The fastest button-masher in the galaxy',  color: '#00BFFF' },
+      { id: 'nova',    name: 'Nova',    emoji: '🔭', desc: 'Built her first gadget at age 5',           color: '#FFD700' },
+      { id: 'orbit',   name: 'Orbit',   emoji: '🚀', desc: 'Lost in space, winning everywhere else',    color: '#00FFFF' },
+      { id: 'striker', name: 'Striker', emoji: '⚽', desc: 'Never met a goal he couldn\'t score',       color: '#7FFF00' },
+      { id: 'sizzle',  name: 'Sizzle',  emoji: '🍳', desc: 'Turns every arena into a cook-off',         color: '#FF6B00' },
+      { id: 'shade',   name: 'Shade',   emoji: '🥷', desc: 'Appears from nowhere, wins from nowhere',   color: '#9B59B6' },
+      { id: 'dusty',   name: 'Dusty',   emoji: '🤠', desc: 'Rides into every game like the Wild West',  color: '#D2691E' },
+      { id: 'pop',     name: 'Pop',     emoji: '🛼', desc: 'Always first to the party, first to win',   color: '#FF1493' },
+    ];
+
+    // ── State ──
+    let ws = null;
+    let playerId = null;
+    let playerColor = '#00BFFF';
+    let selectedHeroId = null;
+    let lockedHeroId = null;
+    let nickname = '';
+    let score = 0;
+    let takenHeroes = new Set();
+    let reconnectToken = null;
+
+    // ── Joystick state ──
+    const sticks = {};
+    let sendInputInterval = null;
+
+    // ── URL parsing ──
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomToken = window.location.pathname.split('/').pop()
+                   || urlParams.get('room') || 'DEMO';
+
+    // ── Vibration helper ──
+    const haptic = (pattern) => {
+      if (!navigator.vibrate) return;
+      const patterns = {
+        join:      [50],
+        ready:     [30, 30, 80],
+        hit:       [80],
+        dash:      [30],
+        fire:      [20],
+        pickup:    [40, 20, 40],
+        eliminate: [100, 50, 200],
+        win:       [50, 30, 50, 30, 200]
+      };
+      navigator.vibrate(patterns[pattern] || [50]);
+    };
+
+    // ── Color frame ──
+    const setColor = (color) => {
+      playerColor = color;
+      document.documentElement.style.setProperty('--player-color', color);
+    };
+
+    // ── Screen navigation ──
+    const showScreen = (id) => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    };
+
+    // ── WebSocket ──
+    const connect = () => {
+      const wsHost = window.location.hostname;
+      const wsUrl = `ws://${wsHost}:8765/join`;
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        document.getElementById('conn-status').classList.add('connected');
+        // Send join or reconnect
+        const token = localStorage.getItem('moments_reconnect_token');
+        if (token) {
+          ws.send(JSON.stringify({ type: 'reconnect', reconnectToken: token, nickname }));
+        } else {
+          ws.send(JSON.stringify({ type: 'join', nickname, roomToken }));
+        }
+      };
+
+      ws.onclose = () => {
+        document.getElementById('conn-status').classList.remove('connected');
+        setTimeout(connect, 3000); // Auto-reconnect
+      };
+
+      ws.onerror = () => ws.close();
+
+      ws.onmessage = (e) => handleServerMessage(JSON.parse(e.data));
+    };
+
+    const send = (obj) => {
+      if (ws && ws.readyState === WebSocket.OPEN)
+        ws.send(JSON.stringify(obj));
+    };
+
+    // ── Server message handler ──
+    const handleServerMessage = (msg) => {
+      switch (msg.type) {
+        case 'welcome':
+          playerId = msg.playerId;
+          reconnectToken = msg.reconnectToken;
+          localStorage.setItem('moments_reconnect_token', reconnectToken);
+          setColor(msg.playerColor || '#00BFFF');
+          document.getElementById('player-avatar').textContent = msg.playerEmoji || '🎮';
+          document.getElementById('player-name-display').textContent = nickname;
+          renderCharacterSelect();
+          showScreen('screen-chars');
+          haptic('join');
+          break;
+
+        case 'stateUpdate':
+          takenHeroes = new Set(msg.takenHeroes || []);
+          score = msg.score || 0;
+          updateCharCardStates();
+          document.getElementById('ctrl-score').textContent = score;
+          if (msg.lobbyState === 'InGame') {
+            activateController(msg.layout || 'default');
+          }
+          break;
+
+        case 'countdown':
+          showCountdown(msg.seconds);
+          break;
+
+        case 'layout':
+          activateController(msg.layoutId);
+          break;
+
+        case 'haptic':
+          haptic(msg.pattern);
+          break;
+
+        case 'eliminated':
+          document.getElementById('eliminated-overlay').classList.add('active');
+          haptic('eliminate');
+          stopInputLoop();
+          break;
+
+        case 'podium':
+          showScreen('screen-ready');
+          document.getElementById('ready-hero-emoji').textContent = '🏆';
+          document.getElementById('ready-hero-name').textContent = `#${msg.placement}`;
+          document.querySelector('.ready-label').textContent = msg.message || 'Session over!';
+          document.querySelector('.waiting-text').textContent = 'Thanks for playing!';
+          haptic('win');
+          break;
+
+        case 'error':
+          alert(msg.code === 'room_full' ? 'Room is full!' : 'Connection error.');
+          break;
+      }
+    };
+
+    // ── Character select rendering ──
+    const renderCharacterSelect = () => {
+      const carousel = document.getElementById('char-carousel');
+      carousel.innerHTML = '';
+      HEROES.forEach(hero => {
+        const card = document.createElement('div');
+        card.className = 'char-card';
+        card.dataset.heroId = hero.id;
+        const taken = takenHeroes.has(hero.id);
+        if (taken) card.classList.add('taken');
+        card.innerHTML = `
+          <div class="char-emoji">${hero.emoji}</div>
+          <div class="char-name">${hero.name}</div>
+          <div class="char-desc">${hero.desc}</div>
+          ${taken ? '<div class="taken-badge">TAKEN</div>' : ''}
+        `;
+        card.addEventListener('click', () => selectHero(hero));
+        carousel.appendChild(card);
+      });
+    };
+
+    const updateCharCardStates = () => {
+      document.querySelectorAll('.char-card').forEach(card => {
+        const id = card.dataset.heroId;
+        card.classList.toggle('taken', takenHeroes.has(id) && id !== selectedHeroId);
+        card.classList.toggle('selected', id === selectedHeroId);
+      });
+    };
+
+    const selectHero = (hero) => {
+      selectedHeroId = hero.id;
+      setColor(hero.color);
+      updateCharCardStates();
+      document.getElementById('btn-lock').classList.add('ready-to-lock');
+      send({ type: 'heroHover', heroId: hero.id });
+      haptic('dash');
+    };
+
+    // Lock-in: hold button
+    let lockTimer = null;
+    const btnLock = document.getElementById('btn-lock');
+    btnLock.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (!selectedHeroId) return;
+      lockTimer = setTimeout(() => {
+        lockedHeroId = selectedHeroId;
+        send({ type: 'heroLock', heroId: lockedHeroId });
+        send({ type: 'ready' });
+        showReadyScreen();
+        haptic('ready');
+      }, 600);
+    });
+    btnLock.addEventListener('touchend', () => clearTimeout(lockTimer));
+
+    const showReadyScreen = () => {
+      const hero = HEROES.find(h => h.id === lockedHeroId);
+      if (hero) {
+        document.getElementById('ready-hero-emoji').textContent = hero.emoji;
+        document.getElementById('ready-hero-name').textContent = hero.name;
+      }
+      showScreen('screen-ready');
+    };
+
+    // ── Countdown ──
+    const showCountdown = (from) => {
+      const overlay = document.getElementById('countdown-overlay');
+      const num = document.getElementById('countdown-num');
+      overlay.classList.add('active');
+      let count = from;
+      const tick = () => {
+        if (count <= 0) { overlay.classList.remove('active'); return; }
+        num.textContent = count;
+        num.style.animation = 'none';
+        num.offsetHeight; // reflow
+        num.style.animation = '';
+        haptic('dash');
+        count--;
+        setTimeout(tick, 1000);
+      };
+      tick();
+    };
+
+    // ── Controller layouts ──
+    const activateController = (layoutId) => {
+      showScreen('screen-controller');
+      const hero = HEROES.find(h => h.id === lockedHeroId);
+      document.getElementById('ctrl-avatar').textContent = hero ? hero.emoji : '🎮';
+      document.getElementById('ctrl-name').textContent = nickname;
+
+      const root = document.getElementById('controller-layout-root');
+      root.innerHTML = '';
+
+      const layouts = {
+        'polar-push':    renderMoveAndDash,
+        'color-clash':   renderMoveOnly,
+        'tank-battle':   renderTankLayout,
+        'wave-rider':    renderWaveLayout,
+        'bumper-blitz':  renderMoveAndBump,
+        'blink-shot':    renderAimAndFire,
+        'gravity-grab':  renderSwipeAndGrab,
+        'default':       renderMoveAndDash,
+      };
+
+      (layouts[layoutId] || layouts['default'])(root);
+      startInputLoop(layoutId);
+    };
+
+    // ── Layout: Move + Dash ──
+    const renderMoveAndDash = (root) => {
+      root.innerHTML = `
+        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
+          <div class="joystick-knob" id="joy-move-knob"></div>
+        </div>
+        <div class="action-btn" id="btn-dash" style="right:50px;bottom:90px;">DASH</div>
+      `;
+      setupJoystick('joy-move', 'move');
+      setupButton('btn-dash', 'dash');
+    };
+
+    // ── Layout: Move Only ──
+    const renderMoveOnly = (root) => {
+      root.innerHTML = `
+        <div class="joystick-zone" id="joy-move" style="left:50%;bottom:80px;transform:translateX(-50%);">
+          <div class="joystick-knob" id="joy-move-knob"></div>
+        </div>
+      `;
+      setupJoystick('joy-move', 'move');
+    };
+
+    // ── Layout: Tank ──
+    const renderTankLayout = (root) => {
+      root.innerHTML = `
+        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
+          <div class="joystick-knob" id="joy-move-knob"></div>
+        </div>
+        <div class="joystick-zone" id="joy-aim" style="right:40px;bottom:60px;">
+          <div class="joystick-knob" id="joy-aim-knob"></div>
+        </div>
+        <div class="action-btn" id="btn-fire" style="right:50%;bottom:280px;transform:translateX(50%);">🔥</div>
+      `;
+      setupJoystick('joy-move', 'move');
+      setupJoystick('joy-aim', 'aim');
+      setupButton('btn-fire', 'fire');
+    };
+
+    // ── Layout: Wave Rider ──
+    const renderWaveLayout = (root) => {
+      root.innerHTML = `
+        <div style="position:absolute;bottom:120px;left:50%;transform:translateX(-50%);text-align:center;opacity:0.4;font-size:14px">TILT TO BALANCE</div>
+        <div class="action-btn" id="btn-duck" style="bottom:80px;left:50%;transform:translateX(-50%);">DUCK</div>
+      `;
+      setupButton('btn-duck', 'duck');
+      // Enable tilt
+      if (typeof DeviceOrientationEvent !== 'undefined') {
+        window.addEventListener('deviceorientation', (e) => {
+          sticks.tiltX = (e.gamma || 0) / 45;
+        });
+      }
+    };
+
+    // ── Layout: Bump ──
+    const renderMoveAndBump = (root) => {
+      root.innerHTML = `
+        <div class="joystick-zone" id="joy-move" style="left:40px;bottom:60px;">
+          <div class="joystick-knob" id="joy-move-knob"></div>
+        </div>
+        <div class="action-btn" id="btn-bump" style="right:50px;bottom:90px;">💥</div>
+      `;
+      setupJoystick('joy-move', 'move');
+      setupButton('btn-bump', 'bump');
+    };
+
+    // ── Layout: Aim + Fire ──
+    const renderAimAndFire = (root) => {
+      root.innerHTML = `
+        <div id="aim-pad" style="position:absolute;inset:60px 0 160px;background:rgba(255,255,255,0.02);border-radius:16px;"></div>
+        <div class="action-btn" id="btn-fire" style="bottom:70px;left:50%;transform:translateX(-50%);">⚡ FIRE</div>
+      `;
+      setupAimPad('aim-pad');
+      setupButton('btn-fire', 'fire');
+    };
+
+    // ── Layout: Swipe + Grab ──
+    const renderSwipeAndGrab = (root) => {
+      root.innerHTML = `
+        <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);text-align:center;opacity:0.4;font-size:14px">SWIPE LEFT / RIGHT</div>
+        <div class="action-btn" id="btn-grab" style="bottom:90px;left:50%;transform:translateX(-50%);width:120px;height:120px;">GRAB</div>
+      `;
+      setupSwipe(root);
+      setupButton('btn-grab', 'grab');
+    };
+
+    // ── Joystick setup ──
+    const setupJoystick = (zoneId, axis) => {
+      const zone = document.getElementById(zoneId);
+      const knob = zone.querySelector('.joystick-knob');
+      if (!zone || !knob) return;
+
+      const maxR = 54;
+      let touch = null;
+      let cx = 0, cy = 0;
+
+      sticks[axis + 'X'] = 0;
+      sticks[axis + 'Y'] = 0;
+
+      zone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touch = e.touches[0];
+        const r = zone.getBoundingClientRect();
+        cx = r.left + r.width / 2;
+        cy = r.top + r.height / 2;
+      }, { passive: false });
+
+      zone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!touch) return;
+        touch = e.touches[0];
+        let dx = touch.clientX - cx;
+        let dy = touch.clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > maxR) { dx *= maxR / dist; dy *= maxR / dist; }
+        knob.style.transform = `translate(${dx}px, ${dy}px)`;
+        sticks[axis + 'X'] = dx / maxR;
+        sticks[axis + 'Y'] = -(dy / maxR); // invert Y for game coordinates
+      }, { passive: false });
+
+      const release = () => {
+        touch = null;
+        knob.style.transform = '';
+        sticks[axis + 'X'] = 0;
+        sticks[axis + 'Y'] = 0;
+      };
+
+      zone.addEventListener('touchend', release);
+      zone.addEventListener('touchcancel', release);
+    };
+
+    // ── Button setup ──
+    const setupButton = (btnId, action) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      sticks[action] = false;
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        sticks[action] = true;
+        btn.classList.add('pressed');
+        haptic('dash');
+      }, { passive: false });
+      btn.addEventListener('touchend', () => {
+        sticks[action] = false;
+        btn.classList.remove('pressed');
+      });
+    };
+
+    // ── Aim pad ──
+    const setupAimPad = (padId) => {
+      const pad = document.getElementById(padId);
+      if (!pad) return;
+      sticks.aimX = 0;
+      sticks.aimY = 0;
+      const r = pad.getBoundingClientRect();
+      pad.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const t = e.touches[0];
+        sticks.aimX = (t.clientX - r.left) / r.width;
+        sticks.aimY = (t.clientY - r.top) / r.height;
+      }, { passive: false });
+    };
+
+    // ── Swipe detector ──
+    const setupSwipe = (root) => {
+      let startX = 0;
+      sticks.moveX = 0;
+      root.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+      root.addEventListener('touchmove', (e) => {
+        sticks.moveX = Math.sign(e.touches[0].clientX - startX);
+      }, { passive: true });
+      root.addEventListener('touchend', () => { sticks.moveX = 0; });
+    };
+
+    // ── Input send loop (60fps → throttled to 20fps) ──
+    const startInputLoop = (layoutId) => {
+      stopInputLoop();
+      sendInputInterval = setInterval(() => {
+        send({
+          type: 'input',
+          moveX:       sticks.moveX || 0,
+          moveY:       sticks.moveY || 0,
+          aimX:        sticks.aimX  || 0,
+          aimY:        sticks.aimY  || 0,
+          tiltX:       sticks.tiltX || 0,
+          dashPressed: !!sticks.dash,
+          firePressed: !!sticks.fire,
+          actionPressed: !!sticks.bump || !!sticks.grab,
+          duckPressed: !!sticks.duck,
+        });
+      }, 50); // 20fps polling
+    };
+
+    const stopInputLoop = () => {
+      if (sendInputInterval) { clearInterval(sendInputInterval); sendInputInterval = null; }
+    };
+
+    // ── Join button ──
+    document.getElementById('btn-join').addEventListener('click', () => {
+      nickname = document.getElementById('nickname-input').value.trim() || `Player${Math.floor(Math.random()*99)}`;
+      if (!nickname) return;
+      connect();
+    });
+
+    document.getElementById('nickname-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-join').click();
+    });
+
+  })();
+  </script>
+</body>
+</html>
