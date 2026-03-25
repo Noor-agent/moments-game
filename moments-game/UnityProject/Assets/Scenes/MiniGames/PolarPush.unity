@@ -19,7 +19,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.05, g: 0.08, b: 0.18, a: 1}
   m_AmbientIntensity: 0.8
   m_AmbientMode: 0
-  m_SkyboxMaterial: {fileID: 11400000, guid: polar-push-skybox-guid, type: 2}
+  m_SkyboxMaterial: {fileID: 11400000, guid: 995a355fd2bae99db86c6dec7fbe97cd, type: 2}
   m_Sun: {fileID: 200000002}
 
 # ═══════════════════════════════════════════════════

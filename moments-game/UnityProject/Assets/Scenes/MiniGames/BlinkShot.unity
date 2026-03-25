@@ -146,7 +146,7 @@ MeshFilter:
 --- !u!23 &300000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: rooftop-mat-guid, type: 2}
+  - {fileID: 11400000, guid: a53274852048a2dbaa2361fb3d63042c, type: 2}
 --- !u!65 &300000004
 BoxCollider:
   m_BoxSize: {x: 1, y: 1, z: 1}

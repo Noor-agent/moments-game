@@ -157,7 +157,7 @@ MeshFilter:
 --- !u!23 &300000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: rink-floor-mat-guid, type: 2}
+  - {fileID: 11400000, guid: 9f8bc5cc02288a42ce0c3800f6591a4c, type: 2}
 --- !u!65 &300000004
 BoxCollider:
   m_BoxSize: {x: 1, y: 1, z: 1}
@@ -178,7 +178,7 @@ Transform:
   m_Father: {fileID: 100000001}
 --- !u!114 &701000002
 MonoBehaviour:
-  m_Script: {fileID: 11500000, guid: rotating-bumper-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fca8b6de4402a39696a2dfd49ec1604, type: 3}
   rotateSpeed: 60
   bumpForce: 15
 
@@ -196,7 +196,7 @@ Transform:
   m_Father: {fileID: 100000001}
 --- !u!114 &702000002
 MonoBehaviour:
-  m_Script: {fileID: 11500000, guid: rotating-bumper-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fca8b6de4402a39696a2dfd49ec1604, type: 3}
   rotateSpeed: -80
   bumpForce: 12
 
@@ -214,7 +214,7 @@ Transform:
   m_Father: {fileID: 100000001}
 --- !u!114 &703000002
 MonoBehaviour:
-  m_Script: {fileID: 11500000, guid: rotating-bumper-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fca8b6de4402a39696a2dfd49ec1604, type: 3}
   rotateSpeed: 45
   bumpForce: 12
 

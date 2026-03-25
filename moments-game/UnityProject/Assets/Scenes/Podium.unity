@@ -108,7 +108,7 @@ MeshFilter:
 --- !u!23 &300000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: podium-gold-material-guid, type: 2}
+  - {fileID: 11400000, guid: 19e57ef3e68e18cbe1e45e1882f1768b, type: 2}
 
 # 2nd Place pedestal (left, medium height)
 --- !u!1 &310000000
@@ -134,7 +134,7 @@ MeshFilter:
 --- !u!23 &310000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: podium-silver-material-guid, type: 2}
+  - {fileID: 11400000, guid: 20637bd8a6641172c8f412b3ebe936f2, type: 2}
 
 # 3rd Place pedestal (right, shorter)
 --- !u!1 &320000000
@@ -160,7 +160,7 @@ MeshFilter:
 --- !u!23 &320000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: podium-bronze-material-guid, type: 2}
+  - {fileID: 11400000, guid: 3a34370d6c5707b02ffa4ed373bd8ac7, type: 2}
 
 # ─── Podium Canvas (UI overlay) ────────────────────
 --- !u!1 &400000000

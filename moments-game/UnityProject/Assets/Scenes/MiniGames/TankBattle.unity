@@ -157,7 +157,7 @@ MeshFilter:
 --- !u!23 &300000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: desert-sand-mat-guid, type: 2}
+  - {fileID: 11400000, guid: 44bdb6bd61818f1550877d0debd6f54b, type: 2}
 
 # ─── Destructible Cover Blocks (6 sandstone pillars) ─
 --- !u!1 &400000000

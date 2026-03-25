@@ -20,7 +20,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.02, g: 0.02, b: 0.04, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 10304, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 0}
   m_Sun: {fileID: 910000001}
 --- !u!157 &3
 LightmapSettings:
@@ -352,7 +352,7 @@ MonoBehaviour:
   m_ObjectHideFlags: 0
   m_GameObject: {fileID: 823000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: textmeshpro-ugui-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb4b961a9e85161, type: 3}
   m_Name: TextMeshPro - Text (UI)
   m_EditorClassIdentifier:
   m_text: Scan the QR code to join!
@@ -485,7 +485,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 11400000, guid: lobby-bg-material-guid, type: 2}
+  - {fileID: 11400000, guid: 55dc41681241e2dfe4c9dd25dbde71a8, type: 2}
 
 # ─── Start Button ──────────────────────────────────
 --- !u!1 &840000000
@@ -527,7 +527,7 @@ MonoBehaviour:
   m_ObjectHideFlags: 0
   m_GameObject: {fileID: 840000000}
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: textmeshpro-ugui-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb4b961a9e85161, type: 3}
   m_Name: TextMeshPro - Text (UI)
   m_EditorClassIdentifier:
   m_text: START GAME

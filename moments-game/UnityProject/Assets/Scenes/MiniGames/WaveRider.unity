@@ -168,7 +168,7 @@ MeshFilter:
 --- !u!23 &300000003
 MeshRenderer:
   m_Materials:
-  - {fileID: 11400000, guid: ocean-water-mat-guid, type: 2}
+  - {fileID: 11400000, guid: 4c7d4705f429f75b339a5583fa42200a, type: 2}
 
 # ─── Horizon Skybox / Fog Volume ───────────────────
 --- !u!1 &400000000

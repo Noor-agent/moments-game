@@ -134,7 +134,7 @@ RectTransform:
 --- !u!114 &310000002
 MonoBehaviour:
   m_Enabled: 1
-  m_Script: {fileID: 11500000, guid: textmeshpro-ugui-guid, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb4b961a9e85161, type: 3}
   m_text: RESULTS
   m_fontSize: 72
   m_fontStyle: 1
