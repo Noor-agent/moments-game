@@ -242,7 +242,7 @@ public static class QRCodeGenerator
             if (coef != 0)
             {
                 for (int j = 1; j < gen.Length; j++)
-                    res[i + j] ^= GFMul(gen[j], coef);
+                    res[i + j] ^= GFMul(gen[j], (byte)coef);
             }
         }
 
