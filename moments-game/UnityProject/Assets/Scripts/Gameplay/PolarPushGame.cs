@@ -160,7 +160,7 @@ public class PolarPushGame : MiniGameBase
 
         rt.moveInput = new Vector2(input.moveX, input.moveY);
 
-        if (input.dashPressed && rt.dashCooldownRemaining <= 0f && !rt.isDashing)
+        if (input.actionPressed && rt.dashCooldownRemaining <= 0f && !rt.isDashing)
             StartCoroutine(ExecuteDash(playerId));
 
         _runtime[playerId] = rt;

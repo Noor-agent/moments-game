@@ -60,7 +60,7 @@ public abstract class MiniGameBase : MonoBehaviour
         }
 
         // Push the correct controller layout to all phones
-        string layoutId = definition?.controllerLayout ?? "MoveAndDash";
+        string layoutId = definition != null ? definition.controllerLayout.ToString() : "MoveAndDash";
         foreach (var p in players)
             ControllerGateway.Instance?.SendUICommand(p.playerId, "set_layout", layoutId);
 

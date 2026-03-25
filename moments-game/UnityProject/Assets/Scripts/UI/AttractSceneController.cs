@@ -74,7 +74,9 @@ public class AttractSceneController : MonoBehaviour
             }
         }
 
-        await MiniGameLoader.Instance?.LoadLobby();
+        // Load lobby scene (fire and forget from coroutine)
+        MiniGameLoader.Instance?.LoadLobby();
+        yield return null;
     }
 
     private IEnumerator TitleColorCycle()

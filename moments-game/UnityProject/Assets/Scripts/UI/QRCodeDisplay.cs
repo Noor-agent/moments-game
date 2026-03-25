@@ -259,8 +259,8 @@ public static class QRCodeGenerator
             var ng = new byte[g.Length + 1];
             for (int j = 0; j < g.Length; j++)
             {
-                ng[j] ^= GFMul(g[j], 1);
-                ng[j + 1] ^= GFMul(g[j], GF_EXP[i]);
+                ng[j] ^= GFMul(g[j], (byte)1);
+                ng[j + 1] ^= GFMul(g[j], (byte)GF_EXP[i]);
             }
             g = ng;
         }
@@ -268,7 +268,7 @@ public static class QRCodeGenerator
     }
 
     private static byte GFMul(byte a, byte b) =>
-        (a == 0 || b == 0) ? (byte)0 : GF_EXP[(GF_LOG[a] + GF_LOG[b]) % 255];
+        (a == 0 || b == 0) ? (byte)0 : (byte)GF_EXP[(GF_LOG[a] + GF_LOG[b]) % 255];
 
     // ── Matrix placement helpers ───────────────────────────────────────────
 

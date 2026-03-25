@@ -213,7 +213,11 @@ public class ColorTile : MonoBehaviour
         tileRenderer.GetPropertyBlock(_mpb);
         _mpb.SetColor(BaseColorId, _currentColor);
         // TilePaint shader drives emission pulse via BlendFactor; 1 = fully painted
-        float blend = 1f - Color.Distance(_currentColor, _targetColor) / 1.732f; // sqrt(3) max dist
+        float dr = _currentColor.r - _targetColor.r;
+        float dg = _currentColor.g - _targetColor.g;
+        float db = _currentColor.b - _targetColor.b;
+        float dist = Mathf.Sqrt(dr*dr + dg*dg + db*db);
+        float blend = 1f - dist / 1.732f; // sqrt(3) max dist
         _mpb.SetFloat(BlendFactor, Mathf.Clamp01(blend));
         tileRenderer.SetPropertyBlock(_mpb);
     }

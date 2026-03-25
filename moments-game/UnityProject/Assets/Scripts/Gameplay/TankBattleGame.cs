@@ -152,7 +152,7 @@ public class TankBattleGame : MiniGameBase
         // Aim = right joystick (turret direction)
         tank.aimInput = new Vector2(input.aimX, input.aimY);
         // Fire
-        if (input.firePressed && tank.fireCooldown <= 0f)
+        if (input.actionPressed && tank.fireCooldown <= 0f)
             tank.fireRequested = true;
     }
 
