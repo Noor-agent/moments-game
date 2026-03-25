@@ -4,8 +4,8 @@
 Material:
   serializedVersion: 8
   m_Name: IceTile_Intact
-  m_Shader: {fileID: 11500000, guid: 4235394079c96b091ba7ae2c78c56bce, type: 3}
-  m_ValidKeywords: []
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -13,21 +13,9 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _NormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Smoothness: 0.88
-    - _NormalStrength: 0.4
-    - _SubsurfaceStrength: 0.55
-    - _RefractionStrength: 0.015
-    - _CrackStrength: 0
-    - _RimPower: 3
-    - _VoronoiScale: 8
-    - _VoronoiStrength: 0.04
+    - _Smoothness: 0.85
+    - _Metallic: 0.1
     m_Colors:
-    - _BaseColor: {r: 0.66, g: 0.85, b: 0.92, a: 0.9}
-    - _SubsurfaceColor: {r: 0.4, g: 0.75, b: 1.0, a: 1}
-    - _RimColor: {r: 0.5, g: 0.8, b: 1.0, a: 1}
-    - _CrackColor: {r: 0.15, g: 0.25, b: 0.4, a: 1}
+    - _BaseColor: {r: 0.78, g: 0.92, b: 1.0, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

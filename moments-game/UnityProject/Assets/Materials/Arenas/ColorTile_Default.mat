@@ -4,16 +4,18 @@
 Material:
   serializedVersion: 8
   m_Name: ColorTile_Default
-  m_Shader: {fileID: 11500000, guid: 25667ba99ae9822d4dff032b68d0063f, type: 3}
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_ShaderKeywords: _EMISSION
   m_SavedProperties:
     serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Smoothness: 0.5
-    - _BlendFactor: 0
-    - _SplatStrength: 0
-    - _GridLines: 0.08
-    - _GridScale: 32
-    - _EmissionBoost: 0.3
+    - _Smoothness: 0.3
+    - _Metallic: 0.0
     m_Colors:
-    - _BaseColor: {r: 0.88, g: 0.88, b: 0.88, a: 1}
-    - _TargetColor: {r: 0, g: 0.75, b: 1, a: 1}
+    - _BaseColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
