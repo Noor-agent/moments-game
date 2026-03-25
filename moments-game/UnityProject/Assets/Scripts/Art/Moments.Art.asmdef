@@ -1,0 +1,16 @@
+{
+    "name": "Moments.Art",
+    "rootNamespace": "Moments",
+    "references": [
+        "Moments.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -171,12 +171,9 @@ public class AudioManager : MonoBehaviour
     public void OnWin()                  => PlaySFX("win");
     public void OnPickup()               => PlaySFX("pickup");
     public void OnTileShatter(Vector3 pos) => PlaySFX("ice_shatter", pos, 1.2f);
-    public void OnCountdown()      => PlaySFX("countdown");
-    public void OnGameStart()      => PlaySFX("game_start");
-    public void OnWin()            => PlaySFX("win");
-    public void OnPlayerJoin()     => PlaySFX("player_join");
-    public void OnPaint(Vector3 pos) => PlaySFX("paint_splat", pos);
-    public void OnScoreIncrease()  => PlaySFX("score_tick");
+    public void OnPlayerJoin()           => PlaySFX("player_join");
+    public void OnPaint(Vector3 pos)     => PlaySFX("paint_splat", pos);
+    public void OnScoreIncrease()        => PlaySFX("score_tick");
 
     // ── Volume Control ─────────────────────────────────────────────────────
 
