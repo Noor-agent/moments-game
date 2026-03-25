@@ -129,9 +129,13 @@ Shader "Moments/TilePaint"
             ZTest LEqual
             ColorMask 0
             HLSLPROGRAM
-            #pragma vertex   ShadowPassVertex
-            #pragma fragment ShadowPassFragment
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            #pragma vertex   vert_shadow
+            #pragma fragment frag_shadow
+            // Inline shadow caster (URP 17 compatible)
+            float4 vert_shadow(float4 pos : POSITION) : SV_POSITION {
+                return TransformObjectToHClip(pos.xyz);
+            }
+            half4 frag_shadow() : SV_Target { return 0; }
             ENDHLSL
         }
     }

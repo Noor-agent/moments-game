@@ -95,9 +95,5 @@ public class BootstrapController : MonoBehaviour
 
 /// <summary>
 /// Flushes the UnityMainThreadDispatcher queue each frame.
-/// Place on the Bootstrap root GameObject.
-/// </summary>
-public class MainThreadFlusher : MonoBehaviour
-{
-    private void Update() => UnityMainThreadDispatcher.Flush();
-}
+// MainThreadFlusher is defined in MainThreadFlusher.cs
+

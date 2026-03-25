@@ -295,7 +295,7 @@ public class PolarPushGame : MiniGameBase
         }
     }
 
-    private IEnumerator EliminatePlayer(string playerId)
+    private new IEnumerator EliminatePlayer(string playerId)
     {
         if (!_runtime.TryGetValue(playerId, out var rt) || rt.isEliminated) yield break;
 
